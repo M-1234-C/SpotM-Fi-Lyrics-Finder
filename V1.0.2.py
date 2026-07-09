@@ -1,0 +1,1342 @@
+import syncedlyrics
+import re
+
+# Translation dictionary containing interface strings for 75 worldwide languages
+LOCALIZATION = {
+    "en": {
+        "title": "🎵 Synced Lyrics Finder 🎵",
+        "exit_msg": "Goodbye! 👋",
+        "song_prompt": "Enter the song name (or type 'exit' to quit): ",
+        "artist_prompt": "Enter the artist name (optional): ",
+        "searching": "Searching for lyrics for: '{}'...",
+        "no_timestamps": "\n⚠️ Lyrics were found, but they do NOT have timestamps.",
+        "plain_lyrics_prompt": "Would you still like to see and save the plain lyrics? (y/n): ",
+        "restarting": "\nRestarting...",
+        "found_header": "\n--- Lyrics Found! ---\n",
+        "save_prompt": "Do you want to save these lyrics to a text file? (y/n): ",
+        "saved_success": "✅ Lyrics successfully saved to {}",
+        "not_found": "\n❌ Sorry, lyrics couldn't be found for this track.",
+        "error_msg": "\nAn error occurred: {}",
+        "loop_restart": "\n--- Restarting Search ---"
+    },
+    "pl": {
+        "title": "🎵 Wyszukiwarka Zsynchronizowanych Tekstów 🎵",
+        "exit_msg": "Do widzenia! 👋",
+        "song_prompt": "Wpisz tytuł piosenki (lub wpisz 'exit', aby wyjść): ",
+        "artist_prompt": "Wpisz wykonawcę (opcjonalnie): ",
+        "searching": "Szukanie tekstu dla: '{}'...",
+        "no_timestamps": "\n⚠️ Znaleziono tekst, ale NIE ma on znaczników czasu.",
+        "plain_lyrics_prompt": "Czy nadal chcesz zobaczyć i zapisać czysty tekst? (t/n): ",
+        "restarting": "\nRestartowanie...",
+        "found_header": "\n--- Znaleziono Tekst! ---\n",
+        "save_prompt": "Czy chcesz zapisać ten tekst do pliku tekstowego? (t/n): ",
+        "saved_success": "✅ Tekst został pomyślnie zapisany w {}",
+        "not_found": "\n❌ Niestety, nie znaleziono tekstu dla tego utworu.",
+        "error_msg": "\nWystąpił błąd: {}",
+        "loop_restart": "\n--- Restartowanie Wyszukiwania ---"
+    },
+    "zh": {
+        "title": "🎵 同步歌词搜寻器 🎵",
+        "exit_msg": "再见! 👋",
+        "song_prompt": "输入歌曲名称（或输入 'exit' 退出）: ",
+        "artist_prompt": "输入歌手名称（可选）: ",
+        "searching": "正在搜寻歌词: '{}'...",
+        "no_timestamps": "\n⚠️ 找到了歌词，但它们没有时间戳。",
+        "plain_lyrics_prompt": "您仍然想查看并保存纯文本歌词吗？(y/n): ",
+        "restarting": "\n正在重新开始...",
+        "found_header": "\n--- 找到歌词！ ---\n",
+        "save_prompt": "您想将这些歌词保存到文本文件中吗？(y/n): ",
+        "saved_success": "✅ 歌词成功保存至 {}",
+        "not_found": "\n❌ 抱歉，找不到这首歌曲的歌词。",
+        "error_msg": "\n发生错误: {}",
+        "loop_restart": "\n--- 重新开始搜寻 ---"
+    },
+    "hi": {
+        "title": "🎵 सिंक किए गए लिरिक्स खोजक 🎵",
+        "exit_msg": "अलविदा! 👋",
+        "song_prompt": "गाने का नाम दर्ज करें (या बाहर निकलने के लिए 'exit' टाइप करें): ",
+        "artist_prompt": "कलाकार का नाम दर्ज करें (वैकल्पिक): ",
+        "searching": "'{}' के लिए लिरिक्स खोजे जा रहे हैं...",
+        "no_timestamps": "\n⚠️ लिरिक्स मिल गए, लेकिन उनमें टाइमस्टैम्प नहीं हैं।",
+        "plain_lyrics_prompt": "क्या आप अभी भी प्लेन लिरिक्स देखना और सहेजना चाहेंगे? (y/n): ",
+        "restarting": "\nपुनः प्रारंभ हो रहा है...",
+        "found_header": "\n--- लिरिक्स मिल गए! ---\n",
+        "save_prompt": "क्या आप इन लिरिक्स को TEXT फ़ाइल में सहेजना चाहते हैं? (y/n): ",
+        "saved_success": "✅ लिरिक्स सफलतापूर्वक {} में सहेजे गए",
+        "not_found": "\n❌ क्षमा करें, इस ट्रैक के लिरिक्स नहीं मिल सके।",
+        "error_msg": "\nएक त्रुटि हुई: {}",
+        "loop_restart": "\n--- खोज पुनः प्रारंभ हो रही है ---"
+    },
+    "es": {
+        "title": "🎵 Buscador de Letras Sincronizadas 🎵",
+        "exit_msg": "¡Adiós! 👋",
+        "song_prompt": "Introduce el nombre de la canción (o escribe 'exit' para salir): ",
+        "artist_prompt": "Introduce el nombre del artista (opcional): ",
+        "searching": "Buscando letra para: '{}'...",
+        "no_timestamps": "\n⚠️ Se encontraron letras, pero NO tienen marcas de tiempo.",
+        "plain_lyrics_prompt": "¿Aún así deseas ver y guardar la letra simple? (s/n): ",
+        "restarting": "\nReiniciando...",
+        "found_header": "\n--- ¡Letra Encontrada! ---\n",
+        "save_prompt": "¿Quieres guardar esta letra en un archivo de texto? (s/n): ",
+        "saved_success": "✅ Letra guardada con éxito en {}",
+        "not_found": "\n❌ Lo sentimos, no se pudo encontrar la letra de esta pista.",
+        "error_msg": "\nOcurrió un error: {}",
+        "loop_restart": "\n--- Reiniciando Búsqueda ---"
+    },
+    "pt": {
+        "title": "🎵 Buscador de Letras Sincronizadas 🎵",
+        "exit_msg": "Adeus! 👋",
+        "song_prompt": "Digite o nome da música (ou digite 'exit' para sair): ",
+        "artist_prompt": "Digite o nome do artista (opcional): ",
+        "searching": "Buscando letra para: '{}'...",
+        "no_timestamps": "\n⚠️ As letras foram encontradas, mas NÃO possuem marcação de tempo.",
+        "plain_lyrics_prompt": "Você ainda gostaria de ver e salvar a letra sem marcação? (s/n): ",
+        "restarting": "\nReiniciando...",
+        "found_header": "\n--- Letra Encontrada! ---\n",
+        "save_prompt": "Deseja salvar esta letra em um arquivo de texto? (s/n): ",
+        "saved_success": "✅ Letra salva com sucesso em {}",
+        "not_found": "\n❌ Desculpe, a letra não foi encontrada para esta faixa.",
+        "error_msg": "\nOcorreu um error: {}",
+        "loop_restart": "\n--- Reiniciando Busca ---"
+    },
+    "fr": {
+        "title": "🎵 Recherche de Paroles Synchronisées 🎵",
+        "exit_msg": "Au revoir ! 👋",
+        "song_prompt": "Entrez le nom de la chanson (ou tapez 'exit' pour quitter) : ",
+        "artist_prompt": "Entrez le nom de l'artiste (optionnel) : ",
+        "searching": "Recherche des paroles pour : '{}'...",
+        "no_timestamps": "\n⚠️ Des paroles ont été trouvées, mais elles n'ont PAS de horodatage.",
+        "plain_lyrics_prompt": "Souhaitez-vous quand même voir et enregistrer les paroles simples ? (o/n) : ",
+        "restarting": "\nRedémarrage...",
+        "found_header": "\n--- Paroles Trouvées ! ---\n",
+        "save_prompt": "Voulez-vous enregistrer ces paroles dans un fichier texte ? (o/n) : ",
+        "saved_success": "✅ Paroles enregistrées avec succès dans {}",
+        "not_found": "\n❌ Désolé, les paroles n'ont pas pu être trouvées pour ce titre.",
+        "error_msg": "\nUne erreur est survenue : {}",
+        "loop_restart": "\n--- Redémarrage de la Recherche ---"
+    },
+    "de": {
+        "title": "🎵 Synchronisierter Songtext-Finder 🎵",
+        "exit_msg": "Auf Wiedersehen! 👋",
+        "song_prompt": "Songnamen eingeben (oder 'exit' zum Beenden): ",
+        "artist_prompt": "Künstlernamen eingeben (optional): ",
+        "searching": "Suche nach Songtext für: '{}'...",
+        "no_timestamps": "\n⚠️ Songtext wurde gefunden, hat aber KEINE Zeitstempel.",
+        "plain_lyrics_prompt": "Möchten Sie den einfachen Text trotzdem sehen und speichern? (j/n): ",
+        "restarting": "\nNeustart...",
+        "found_header": "\n--- Songtext Gefunden! ---\n",
+        "save_prompt": "Möchten Sie diesen Songtext in einer Textdatei speichern? (j/n): ",
+        "saved_success": "✅ Songtext erfolgreich in {} gespeichert",
+        "not_found": "\n❌ Leider konnte kein Songtext für diesen Titel gefunden werden.",
+        "error_msg": "\nEin Fehler ist aufgetreten: {}",
+        "loop_restart": "\n--- Suche wird neu gestartet ---"
+    },
+    "uk": {
+        "title": "🎵 Пошук Синхронізованих Текстів Пісень 🎵",
+        "exit_msg": "До побачення! 👋",
+        "song_prompt": "Введіть назву пісні (або 'exit' для виходу): ",
+        "artist_prompt": "Введіть ім'я виконавця (опціонально): ",
+        "searching": "Пошук тексту для: '{}'...",
+        "no_timestamps": "\n⚠️ Текст знайдено, але він НЕ має часових міток.",
+        "plain_lyrics_prompt": "Бажаєте переглянути та зберегти простий текст пісні? (y/n): ",
+        "restarting": "\nПерезапуск...",
+        "found_header": "\n--- Текст Знайдено! ---\n",
+        "save_prompt": "Бажаєте зберегти цей текст у текстовий файл? (y/n): ",
+        "saved_success": "✅ Текст пісні успешно збережено в {}",
+        "not_found": "\n❌ Вибачте, текст для цього треку не знайдено.",
+        "error_msg": "\nСталася помилка: {}",
+        "loop_restart": "\n--- Перезапуск Пошуку ---"
+    },
+    "it": {
+        "title": "🎵 Cercatore di Testi Sincronizzati 🎵",
+        "exit_msg": "Arrivederci! 👋",
+        "song_prompt": "Inserisci il nome della canzone (o digita 'exit' per uscire): ",
+        "artist_prompt": "Inserisci il nome dell'artista (opzionale): ",
+        "searching": "Ricerca del testo per: '{}'...",
+        "no_timestamps": "\n⚠️ Il testo è stato trovato, ma NON ha marcature temporali.",
+        "plain_lyrics_prompt": "Vuoi comunque visualizzare e salvare il testo semplice? (s/n): ",
+        "restarting": "\nRiavvio...",
+        "found_header": "\n--- Testo Trovato! ---\n",
+        "save_prompt": "Vuoi salvare questo testo in un file .txt? (s/n): ",
+        "saved_success": "✅ Testo salvato con successo in {}",
+        "not_found": "\n❌ Spiacenti, non è stato possibile trovare il testo per questo brano.",
+        "error_msg": "\nSi è verificato un errore: {}",
+        "loop_restart": "\n--- Riavvio della Ricerca ---"
+    },
+    "ko": {
+        "title": "🎵 동기화된 가사 찾기 🎵",
+        "exit_msg": "안녕히 가세요! 👋",
+        "song_prompt": "노래 제목을 입력하세요 (종료하려면 'exit' 입력): ",
+        "artist_prompt": "아티스트 이름을 입력하세요 (선택 사항): ",
+        "searching": "'{}'의 가사를 검색하는 중...",
+        "no_timestamps": "\n⚠️ 가사를 찾았으나 타임스탬프가 없습니다.",
+        "plain_lyrics_prompt": "일반 가사를 확인하고 저장하시겠습니까? (y/n): ",
+        "restarting": "\n재시작하는 중...",
+        "found_header": "\n--- 가사를 찾았습니다! ---\n",
+        "save_prompt": "이 가사를 텍스트 파일로 저장하시겠습니까? (y/n): ",
+        "saved_success": "✅ 가사가 {}에 성공적으로 저장되었습니다.",
+        "not_found": "\n❌ 죄송합니다, 이 곡의 가사를 찾을 수 없습니다.",
+        "error_msg": "\n오류가 발생했습니다: {}",
+        "loop_restart": "\n--- 검색 재시작 ---"
+    },
+    "ja": {
+        "title": "🎵 同期歌詞ファインダー 🎵",
+        "exit_msg": "さようなら！ 👋",
+        "song_prompt": "曲名を入力してください（終了するには 'exit' と入力）: ",
+        "artist_prompt": "アーティスト名を入力してください（任意）: ",
+        "searching": "「{}」の歌詞を検索中...",
+        "no_timestamps": "\n⚠️ 歌詞は見つかりましたが、タイムスタンプがありません。",
+        "plain_lyrics_prompt": "通常の歌詞を表示して保存しますか？ (y/n): ",
+        "restarting": "\n再起動中...",
+        "found_header": "\n--- 歌詞が見つかりました！ ---\n",
+        "save_prompt": "この歌詞をテキストファイルに保存しますか？ (y/n): ",
+        "saved_success": "✅ 歌詞が {} に正常に保存されました",
+        "not_found": "\n❌ 残念ながら、この曲の歌詞は見つかりませんでした。",
+        "error_msg": "\nエラーが発生しました: {}",
+        "loop_restart": "\n--- 検索を再起動しています ---"
+    },
+    "ro": {
+        "title": "🎵 Căutător de Versuri Sincronizate 🎵",
+        "exit_msg": "La revedere! 👋",
+        "song_prompt": "Introduceți numele melodiei (sau tastați 'exit' pentru a ieși): ",
+        "artist_prompt": "Introduceți numele artistului (opțional): ",
+        "searching": "Se caută versuri pentru: '{}'...",
+        "no_timestamps": "\n⚠️ Versurile au fost găsite, dar NU au marcaje de timp.",
+        "plain_lyrics_prompt": "Doriți totuși să vedeți și să salvați versurile simple? (y/n): ",
+        "restarting": "\nSe repornește...",
+        "found_header": "\n--- Versuri Găsite! ---\n",
+        "save_prompt": "Doriți să salvați aceste versuri într-un fișier text? (y/n): ",
+        "saved_success": "✅ Versuri salvate cu succes în {}",
+        "not_found": "\n❌ Ne pare rău, versurile nu au putut fi găsite pentru această piesă.",
+        "error_msg": "\nA apărut o eroare: {}",
+        "loop_restart": "\n--- Se repornește căutarea ---"
+    },
+    "nl": {
+        "title": "🎵 Gesynchroniseerde Songtekst Zoeker 🎵",
+        "exit_msg": "Tot ziens! 👋",
+        "song_prompt": "Voer de naam van het nummer in (of typ 'exit' om af te sluiten): ",
+        "artist_prompt": "Voer de naam van the artiest in (optioneel): ",
+        "searching": "Zoeken naar songtekst voor: '{}'...",
+        "no_timestamps": "\n⚠️ Songtekst gevonden, maar deze heeft GEEN tijdstempels.",
+        "plain_lyrics_prompt": "Wilt u de gewone songtekst nog steeds bekijken en opslaan? (j/n): ",
+        "restarting": "\nOpnieuw opstarten...",
+        "found_header": "\n--- Songtekst Gevonden! ---\n",
+        "save_prompt": "Wilt u deze songtekst opslaan in een tekstbestand? (j/n): ",
+        "saved_success": "✅ Songtekst succesvol opgeslagen in {}",
+        "not_found": "\n❌ Helaas, er is geen songtekst gevonden voor dit nummer.",
+        "error_msg": "\nEr is een fout opgetreden: {}",
+        "loop_restart": "\n--- Zoekopdracht herstarten ---"
+    },
+    "sv": {
+        "title": "🎵 Synkroniserad Textsökare 🎵",
+        "exit_msg": "Hejdå! 👋",
+        "song_prompt": "Ange låtens namn (eller skriv 'exit' för att avsluta): ",
+        "artist_prompt": "Ange artistens namn (valfritt): ",
+        "searching": "Söker efter låttext för: '{}'...",
+        "no_timestamps": "\n⚠️ Låttexten hittades, men den saknar tidsstämplar.",
+        "plain_lyrics_prompt": "Vill du ändå se och spara den vanliga texten? (j/n): ",
+        "restarting": "\nStartar om...",
+        "found_header": "\n--- Låttext Hittad! ---\n",
+        "save_prompt": "Vill du spara denna låttext i en textfil? (j/n): ",
+        "saved_success": "✅ Låttexten har sparats i {}",
+        "not_found": "\n❌ Tyvärr gick det inte att hitta någon låttext för det här spåret.",
+        "error_msg": "\nEtt fel uppstod: {}",
+        "loop_restart": "\n--- Startar om sökningen ---"
+    },
+    "da": {
+        "title": "🎵 Synkroniseret Sangtekst Finder 🎵",
+        "exit_msg": "Farvel! 👋",
+        "song_prompt": "Indtast sangens navn (eller skriv 'exit' for at afslutte): ",
+        "artist_prompt": "Indtast kunstnerens navn (valgfrit): ",
+        "searching": "Søger efter sangtekst til: '{}'...",
+        "no_timestamps": "\n⚠️ Sangteksten blev fundet, men den har IKKE tidsstempler.",
+        "plain_lyrics_prompt": "Vil du stadig se og gemme den almindelige tekst? (j/n): ",
+        "restarting": "\nGenstarter...",
+        "found_header": "\n--- Sangtekst Fundet! ---\n",
+        "save_prompt": "Vil du gemme denne sangtekst i en tekstfil? (j/n): ",
+        "saved_success": "✅ Sangtekst gemt i {}",
+        "not_found": "\n❌ Beklager, sangteksten kunne ikke findes for dette nummer.",
+        "error_msg": "\nDer opstod en fejl: {}",
+        "loop_restart": "\n--- Genstarter søgning ---"
+    },
+    "no": {
+        "title": "🎵 Synkronisert Sangtekstsøker 🎵",
+        "exit_msg": "Ha det bra! 👋",
+        "song_prompt": "Skriv inn sangnavn (eller skriv 'exit' for å avslutte): ",
+        "artist_prompt": "Skriv inn artistnavn (valgfritt): ",
+        "searching": "Søker etter sangtekst for: '{}'...",
+        "no_timestamps": "\n⚠️ Sangteksten ble funnet, men den hat IKKE tidsstempler.",
+        "plain_lyrics_prompt": "Vil du likevel se og lagre den vanlige teksten? (j/n): ",
+        "restarting": "\nStarter på nytt...",
+        "found_header": "\n--- Sangtekst Funnet! ---\n",
+        "save_prompt": "Vil du lagre denne sangteksten i en tekstfil? (j/n): ",
+        "saved_success": "✅ Sangtekst lagret i {}",
+        "not_found": "\n❌ Beklager, fant ikke sangteksten for dette sporet.",
+        "error_msg": "\nDet oppstod en feil: {}",
+        "loop_restart": "\n--- Starter søk på nytt ---"
+    },
+    "is": {
+        "title": "🎵 Samstillt Textaleit 🎵",
+        "exit_msg": "Bless! 👋",
+        "song_prompt": "Sláðu inn nafn lagsins (eða skrifaðu 'exit' til að hætta): ",
+        "artist_prompt": "Sláðu inn nafn flytjanda (valfrjálst): ",
+        "searching": "Leitar að texta fyrir: '{}'...",
+        "no_timestamps": "\n⚠️ Texti fannst, en hann hefur EKKI tímamerki.",
+        "plain_lyrics_prompt": "Viltu samt sjá og vista venjulega textann? (j/n): ",
+        "restarting": "\nEndurræsir...",
+        "found_header": "\n--- Texti fannst! ---\n",
+        "save_prompt": "Viltu vista þennan texta í textaskrá? (j/n): ",
+        "saved_success": "✅ Texti vistaður í {}",
+        "not_found": "\n❌ Því miður fannst enginn texti fyrir þetta lag.",
+        "error_msg": "\nVilla kom upp: {}",
+        "loop_restart": "\n--- Leit endurræst ---"
+    },
+    "bg": {
+        "title": "🎵 Търсач на Синхронизирани Текстове 🎵",
+        "exit_msg": "Довиждане! 👋",
+        "song_prompt": "Въведете име на песента (или напишете 'exit' за изход): ",
+        "artist_prompt": "Въведете име на изпълнителя (по избор): ",
+        "searching": "Търсене на текст за: '{}'...",
+        "no_timestamps": "\n⚠️ Текстът беше намерен, но няма времеви маркери.",
+        "plain_lyrics_prompt": "Искате ли все пак да видите и запазите обикновения текст? (y/n): ",
+        "restarting": "\nРестартиране...",
+        "found_header": "\n--- Текстът е Намерен! ---\n",
+        "save_prompt": "Искате ли да запазите този текст в текстов файл? (y/n): ",
+        "saved_success": "✅ Текстът е успешно запазен в {}",
+        "not_found": "\n❌ За съжаление, текстът за тази песен не беше намерен.",
+        "error_msg": "\nВъзникна грешка: {}",
+        "loop_restart": "\n--- Рестартиране на търсенето ---"
+    },
+    "el": {
+        "title": "🎵 Αναζήτηση Συγχρονισμένων Στίχων 🎵",
+        "exit_msg": "Αντίο! 👋",
+        "song_prompt": "Εισαγάγετε το όνομα του τραγουδιού (ή πληκτρολογήστε 'exit' για έξοδο): ",
+        "artist_prompt": "Εισαγάγετε το όνομα του καλλιτέχνη (προαιρετικό): ",
+        "searching": "Αναζήτηση στίχων για: '{}'...",
+        "no_timestamps": "\n⚠️ Βρέθηκαν στίχοι, αλλά ΔΕΝ έχουν χρονική σήμανση.",
+        "plain_lyrics_prompt": "Θέλετε παρόλα αυτά να δείτε και να αποθηκεύσετε τους απλούς στίχους; (y/n): ",
+        "restarting": "\nΕπανεκκίνηση...",
+        "found_header": "\n--- Οι Στίχοι Βρέθηκαν! ---\n",
+        "save_prompt": "Θέλετε να αποθηκεύσετε αυτούς τους στίχους σε αρχείο κειμένου; (y/n): ",
+        "saved_success": "✅ Οι στίχοι αποθηκεύτηκαν με επιτυχία στο {}",
+        "not_found": "\n❌ Λυπούμαστε, δεν βρέθηκαν στίχοι για αυτό το κομμάτι.",
+        "error_msg": "\nΠροέκυψε σφάλμα: {}",
+        "loop_restart": "\n--- Επανεκκίνηση Αναζήτησης ---"
+    },
+    "tr": {
+        "title": "🎵 Senkronize Şarkı Sözü Bulucu 🎵",
+        "exit_msg": "Hoşça kal! 👋",
+        "song_prompt": "Şarkı adını girin (veya çıkmak için 'exit' yazın): ",
+        "artist_prompt": "Sanatçı adını girin (isteğe bağlı): ",
+        "searching": "'{}' için şarkı sözü aranıyor...",
+        "no_timestamps": "\n⚠️ Şarkı sözleri bulundu ancak zaman damgası İÇERMİYOR.",
+        "plain_lyrics_prompt": "Düz şarkı sözlerini yine de görmek ve kaydetmek ister misiniz? (e/h): ",
+        "restarting": "\nYeniden başlatılıyor...",
+        "found_header": "\n--- Şarkı Sözleri Bulundu! ---\n",
+        "save_prompt": "Bu şarkı sözlerini bir metin dosyasına kaydetmek ister misiniz? (e/h): ",
+        "saved_success": "✅ Şarkı sözleri başarıyla {} dosyasına kaydedildi",
+        "not_found": "\n❌ Üzgünüz, bu parça için şarkı sözü bulunamadı.",
+        "error_msg": "\nBir hata oluştu: {}",
+        "loop_restart": "\n--- Arama Yeniden Başlatılıyor ---"
+    },
+    "ar": {
+        "title": "🎵 الباحث عن كلمات الأغاني المتزامنة 🎵",
+        "exit_msg": "وداعاً! 👋",
+        "song_prompt": "أدخل اسم الأغنية (أو اكتب 'exit' للخروج): ",
+        "artist_prompt": "أدخل اسم الفنان (اختياري): ",
+        "searching": "جاري البحث عن كلمات: '{}'...",
+        "no_timestamps": "\n⚠️ تم العثور على الكلمات، لكنها لا تحتوي على طوابع زمنية.",
+        "plain_lyrics_prompt": "هل ما زلت ترغب في عرض وحفظ الكلمات العادية؟ (y/n): ",
+        "restarting": "\nجاري إعادة التشغيل...",
+        "found_header": "\n--- تم العثور على الكلمات! ---\n",
+        "save_prompt": "هل تريد حفظ هذه الكلمات في ملف نصي؟ (y/n): ",
+        "saved_success": "✅ تم حفظ الكلمات بنجاح في {}",
+        "not_found": "\n❌ عذراً، لم يتم العثور على كلمات لهذه الأغنية.",
+        "error_msg": "\nحدث خطأ: {}",
+        "loop_restart": "\n--- إعادة تشغيل البحث ---"
+    },
+    "ru": {
+        "title": "🎵 Поиск синхронизированного текста песен 🎵",
+        "exit_msg": "До свидания! 👋",
+        "song_prompt": "Введите название песни (или 'exit' для выхода): ",
+        "artist_prompt": "Введите имя исполнителя (опционально): ",
+        "searching": "Поиск текста для: '{}'...",
+        "no_timestamps": "\n⚠️ Текст найден, но он НЕ имеет временных меток.",
+        "plain_lyrics_prompt": "Желаете ли вы просмотреть и сохранить обычный текст? (д/н): ",
+        "restarting": "\nПерезапуск...",
+        "found_header": "\n--- Текст найден! ---\n",
+        "save_prompt": "Хотите сохранить этот текст в текстовый файл? (д/н): ",
+        "saved_success": "✅ Текст успешно сохранен в {}",
+        "not_found": "\n❌ К сожалению, текст для этого трека не найден.",
+        "error_msg": "\nПроизошла ошибка: {}",
+        "loop_restart": "\n--- Перезапуск поиска ---"
+    },
+    "bn": {
+        "title": "🎵 সিঙ্ক করা লিরিক্স খোঁজার যন্ত্র 🎵",
+        "exit_msg": "বিদায়! 👋",
+        "song_prompt": "গানের নাম লিখুন (অথবা বের হতে 'exit' টাইপ করুন): ",
+        "artist_prompt": "শিল্পীর নাম লিখুন (ঐচ্ছিক): ",
+        "searching": "'{}'-এর জন্য লিরিক্স খোঁজা হচ্ছে...",
+        "no_timestamps": "\n⚠️ লিরিক্স পাওয়া গেছে, কিন্তু সেগুলিতে কোনো টাইমস্ট্যাম্প নেই।",
+        "plain_lyrics_prompt": "আপনি কি তবুও সাধারণ লিরিক্স দেখতে এবং সংরক্ষণ করতে চান? (y/n): ",
+        "restarting": "\nপুনরায় शुरू হচ্ছে...",
+        "found_header": "\n--- লিরিক্স পাওয়া গেছে! ---\n",
+        "save_prompt": "আপনি কি এই লিরিক্স একটি টেক্সট ফাইলে সংরক্ষণ করতে চান? (y/n): ",
+        "saved_success": "✅ লিরিক্স সফলভাবে {} এ সংরক্ষিত হয়েছে",
+        "not_found": "\n❌ দুঃখিত, এই ট্র্যাকের জন্য লিরিক্স পাওয়া যায়নি।",
+        "error_msg": "\nএকটি ত্রুটি ঘটেছে: {}",
+        "loop_restart": "\n--- অনুসন্ধান পুনরায় শুরু হচ্ছে ---"
+    },
+    "id": {
+        "title": "🎵 Pencari Lirik Sinkron 🎵",
+        "exit_msg": "Sampai jumpa! 👋",
+        "song_prompt": "Masukkan nama lagu (atau ketik 'exit' untuk keluar): ",
+        "artist_prompt": "Masukkan nama artis (opsional): ",
+        "searching": "Mencari lirik untuk: '{}'...",
+        "no_timestamps": "\n⚠️ Lirik ditemukan, tetapi TIDAK memiliki stempel waktu.",
+        "plain_lyrics_prompt": "Apakah Anda tetap ingin melihat dan menyimpan lirik biasa? (y/n): ",
+        "restarting": "\nMemulai ulang...",
+        "found_header": "\n--- Lirik Ditemukan! ---\n",
+        "save_prompt": "Apakah Anda ingin menyimpan lirik ini ke file teks? (y/n): ",
+        "saved_success": "✅ Lirik berhasil disimpan ke {}",
+        "not_found": "\n❌ Maaf, lirik tidak ditemukan untuk lagu ini.",
+        "error_msg": "\nTerjadi kesalahan: {}",
+        "loop_restart": "\n--- Memulai Ulang Pencarian ---"
+    },
+    "vi": {
+        "title": "🎵 Trình Tìm Lời Bài Hát Đồng Bộ 🎵",
+        "exit_msg": "Tạm biệt! 👋",
+        "song_prompt": "Nhập tên bài hát (hoặc gõ 'exit' để thoát): ",
+        "artist_prompt": "Nhập tên ca sĩ (tùy chọn): ",
+        "searching": "Đang tìm lời bài hát cho: '{}'...",
+        "no_timestamps": "\n⚠️ Đã tìm thấy lời bài hát, nhưng KHÔNG có mốc thời gian.",
+        "plain_lyrics_prompt": "Bạn có muốn xem và lưu lời bài hát thường không? (c/k): ",
+        "restarting": "\nĐang khởi động lại...",
+        "found_header": "\n--- Đã Tìm Thấy Lời Bài Hát! ---\n",
+        "save_prompt": "Bạn có muốn lưu lời bài hát này vào tệp văn bản không? (c/k): ",
+        "saved_success": "✅ Lời bài hát đã được lưu thành công vào {}",
+        "not_found": "\n❌ Rất tiếc, không tìm thấy lời bài hát cho ca khúc này.",
+        "error_msg": "\nĐã xảy ra lỗi: {}",
+        "loop_restart": "\n--- Đang khởi động lại tìm kiếm ---"
+    },
+    "th": {
+        "title": "🎵 เครื่องมือค้นหาเนื้อเพลงซิงค์ 🎵",
+        "exit_msg": "ลาก่อน! 👋",
+        "song_prompt": "ป้อนชื่อเพลง (หรือพิมพ์ 'exit' เพื่อออก): ",
+        "artist_prompt": "ป้อนชื่อศิลปิน (ไม่บังคับ): ",
+        "searching": "กำลังค้นหาเนื้อเพลงสำหรับ: '{}'...",
+        "no_timestamps": "\n⚠️ พบเนื้อเพลง แต่ไม่มีการประทับเวลา",
+        "plain_lyrics_prompt": "คุณยังต้องการดูและบันทึกเนื้อเพลงแบบธรรมดาหรือไม่? (y/n): ",
+        "restarting": "\nกำลังเริ่มต้นใหม่...",
+        "found_header": "\n--- พบเนื้อเพลงแล้ว! ---\n",
+        "save_prompt": "คุณต้องการบันทึกเนื้อเพลงนี้ลงในไฟล์ข้อความหรือไม่? (y/n): ",
+        "saved_success": "✅ บันทึกเนื้อเพลงลงใน {} สำเร็จแล้ว",
+        "not_found": "\n❌ ขออภัย ไม่พบเนื้อเพลงสำหรับเพลงนี้",
+        "error_msg": "\nเกิดข้อผิดพลาด: {}",
+        "loop_restart": "\n--- กำลังเริ่มการค้นหาใหม่ ---"
+    },
+    "fa": {
+        "title": "🎵 جستجوگر متن آهنگ همگام‌سازی شده 🎵",
+        "exit_msg": "خداحافظ! 👋",
+        "song_prompt": "نام آهنگ را وارد کنید (یا برای خروج 'exit' را تایپ کنید): ",
+        "artist_prompt": "نام خواننده را وارد کنید (اختیاری): ",
+        "searching": "در حال جستجوی متن آهنگ برای: '{}'...",
+        "no_timestamps": "\n⚠️ متن آهنگ یافت شد، اما دارای برچسب زمانی نیست.",
+        "plain_lyrics_prompt": "آیا همچنان مایلید متن ساده آهنگ را مشاهده و ذخیره کنید؟ (y/n): ",
+        "restarting": "\nدر حال راه‌اندازی مجدد...",
+        "found_header": "\n--- متن آهنگ پیدا شد! ---\n",
+        "save_prompt": "آیا می‌خواهید این متن آهنگ را در یک فایل متنی ذخیره کنید؟ (y/n): ",
+        "saved_success": "✅ متن آهنگ با موفقیت در {} ذخیره شد",
+        "not_found": "\n❌ متأسفانه متن آهنگی برای این ترک یافت نشد.",
+        "error_msg": "\nخطایی رخ داد: {}",
+        "loop_restart": "\n--- راه‌اندازی مجدد جستجو ---"
+    },
+    "ur": {
+        "title": "🎵 مطابقت شدہ دھن تلاش کنندہ 🎵",
+        "exit_msg": "خدا حافظ! 👋",
+        "song_prompt": "گانے کا نام درج کریں (یا باہر نکلنے کے لیے 'exit' لکھیں): ",
+        "artist_prompt": "فنکار کا نام درج کریں (اختیاری): ",
+        "searching": "'{}' کے لیے دھن تلاش کی جا رہی ہے...",
+        "no_timestamps": "\n⚠️ دھن مل گئی ہے، لیکن اس میں ٹائم اسٹیمپ نہیں ہیں۔",
+        "plain_lyrics_prompt": "کیا آپ پھر بھی سادہ دھن دیکھنا اور محفوظ کرنا چاہتے ہیں؟ (y/n): ",
+        "restarting": "\nدوبارہ شروع ہو رہا ہے...",
+        "found_header": "\n--- دھن مل گئی! ---\n",
+        "save_prompt": "کیا آپ ان دھنوں کو ٹیکسٹ فائل میں محفوظ کرنا چاہتے ہیں? (y/n): ",
+        "saved_success": "✅ دھن کامیابی کے ساتھ {} میں محفوظ ہو گئی",
+        "not_found": "\n❌ معذرت، اس ٹریک کے لیے دھن نہیں مل سکی۔",
+        "error_msg": "\nایک خرابی پیش آئی: {}",
+        "loop_restart": "\n--- تلاش دوبارہ شروع ہو رہی ہے ---"
+    },
+    "cs": {
+        "title": "🎵 Vyhledávač Synchronizovaných Textů 🎵",
+        "exit_msg": "Sbohem! 👋",
+        "song_prompt": "Zadejte název písně (nebo napište 'exit' pro ukončení): ",
+        "artist_prompt": "Zadejte jméno interpreta (volitelné): ",
+        "searching": "Hledání textu pro: '{}'...",
+        "no_timestamps": "\n⚠️ Text byl nalezen, ale NEMÁ časové značky.",
+        "plain_lyrics_prompt": "Chcete přesto zobrazit a uložit prostý text? (a/n): ",
+        "restarting": "\nRestartování...",
+        "found_header": "\n--- Text nalezen! ---\n",
+        "save_prompt": "Chcete tento text uložit do textového souboru? (a/n): ",
+        "saved_success": "✅ Text byl úspěšně uložen do {}",
+        "not_found": "\n❌ Omlouváme se, text pro tuto skladbu nebyl nalezen.",
+        "error_msg": "\nDošlo k chybě: {}",
+        "loop_restart": "\n--- Restartování vyhledávání ---"
+    },
+    "hu": {
+        "title": "🎵 Szinkronizált Dalszöveg Kereső 🎵",
+        "exit_msg": "Viszontlátásra! 👋",
+        "song_prompt": "Adja meg a dal címét (vagy írja be az 'exit' szót a kilépéshez): ",
+        "artist_prompt": "Adja meg az előadót (opcionális): ",
+        "searching": "Dalszöveg keresése a következőhöz: '{}'...",
+        "no_timestamps": "\n⚠️ A dalszöveg megvan, de NINCSENEK időbélyegei.",
+        "plain_lyrics_prompt": "Szeretné mégis megtekinteni és elmenteni a sima dalszöveget? (i/n): ",
+        "restarting": "\nÚjraindítás...",
+        "found_header": "\n--- Dalszöveg Megtalálva! ---\n",
+        "save_prompt": "Szeretné elmenteni ezt a dalszöveget egy szöveges fájlba? (i/n): ",
+        "saved_success": "✅ Dalszöveg sikeresen elmentve ide: {}",
+        "not_found": "\n❌ Sajnáljuk, nem található dalszöveg ehhez a számhoz.",
+        "error_msg": "\nHiba történt: {}",
+        "loop_restart": "\n--- Keresés Újraindítása ---"
+    },
+    "fi": {
+        "title": "🎵 Synkronoitujen Sanojen Etsijä 🎵",
+        "exit_msg": "Näkemiin! 👋",
+        "song_prompt": "Anna kappaleen nimi (tai kirjoita 'exit' lopettaaksesi): ",
+        "artist_prompt": "Anna esittäjän nimi (valinnainen): ",
+        "searching": "Etsitään sanoja kappaleelle: '{}'...",
+        "no_timestamps": "\n⚠️ Sanat löytyivät, mutta niissä EI ole aikaleimoja.",
+        "plain_lyrics_prompt": "Haluatko silti nähdä ja tallentaa tavalliset sanat? (k/e): ",
+        "restarting": "\nKäynnistetään uudelleen...",
+        "found_header": "\n--- Sanat Löytyivät! ---\n",
+        "save_prompt": "Haluatko tallentaa nämä sanat tekstitiedostoon? (k/e): ",
+        "saved_success": "✅ Sanat tallennettu onnistuneesti kohteeseen {}",
+        "not_found": "\n❌ Valitettavasti tälle kappaleelle ei löytynyt sanoja.",
+        "error_msg": "\nTapahtui virhe: {}",
+        "loop_restart": "\n--- Haku käynnistetään uudelleen ---"
+    },
+    "he": {
+        "title": "🎵 מחפש מילים מסונכרנות לשירים 🎵",
+        "exit_msg": "להתראות! 👋",
+        "song_prompt": "הכנס את שם השיר (או הקלד 'exit' כדי לצאת): ",
+        "artist_prompt": "הכנס את שם האמן (אופציונלי): ",
+        "searching": "מחפש מילים עבור: '{}'...",
+        "no_timestamps": "\n⚠️ המילים נמצאו, אך אין להן ציוני זמן.",
+        "plain_lyrics_prompt": "האם עדיין תרצה לראות ולשמור את המילים הפשוטות? (y/n): ",
+        "restarting": "\nמפעיל מחדש...",
+        "found_header": "\n--- המילים נמצאו! ---\n",
+        "save_prompt": "האם ברצונך לשמור מילים אלו בקובץ טקסט? (y/n): ",
+        "saved_success": "✅ המילים נשמרו בהצלחה ב-{}",
+        "not_found": "\n❌ מצטערים, לא נמצאו מילים לרצועה זו.",
+        "error_msg": "\nאירעה שגיאה: {}",
+        "loop_restart": "\n--- הפעלת החיפוש מחדש ---"
+    },
+    "sk": {
+        "title": "🎵 Vyhľadávač Synchronizovaných Textov 🎵",
+        "exit_msg": "Dovidenia! 👋",
+        "song_prompt": "Zadajte názov piesne (alebo napíšte 'exit' pre ukončenie): ",
+        "artist_prompt": "Zadajte meno interpreta (voliteľné): ",
+        "searching": "Hľadanie textu pre: '{}'...",
+        "no_timestamps": "\n⚠️ Text bol nájdený, ale NEMÁ časové značky.",
+        "plain_lyrics_prompt": "Chcete napriek tomu zobraziť a uložiť čistý text? (a/n): ",
+        "restarting": "\nReštartuje sa...",
+        "found_header": "\n--- Text nájdený! ---\n",
+        "save_prompt": "Chcete tento text uložiť do textového súboru? (a/n): ",
+        "saved_success": "✅ Text bol úspešne uložený do {}",
+        "not_found": "\n❌ Ospravedlňujeme sa, text pre túto skladbu sa nenašiel.",
+        "error_msg": "\nDošlo k chybe: {}",
+        "loop_restart": "\n--- Reštartovanie vyhľadávania ---"
+    },
+    "ms": {
+        "title": "🎵 Pencari Lirik Disinkronkan 🎵",
+        "exit_msg": "Selamat tinggal! 👋",
+        "song_prompt": "Masukkan nama lagu (atau taip 'exit' untuk keluar): ",
+        "artist_prompt": "Masukkan nama artis (pilihan): ",
+        "searching": "Mencari lirik untuk: '{}'...",
+        "no_timestamps": "\n⚠️ Lirik ditemui, tetapi TIADA tanda masa.",
+        "plain_lyrics_prompt": "Adakah anda masih mahu melihat dan menyimpan lirik biasa? (y/n): ",
+        "restarting": "\nMemulakan semula...",
+        "found_header": "\n--- Lirik Ditemui! ---\n",
+        "save_prompt": "Adakah anda mahu menyimpan lirik ini ke fail teks? (y/n): ",
+        "saved_success": "✅ Lirik berjaya disimpan ke {}",
+        "not_found": "\n❌ Maaf, lirik tidak dapat ditemui untuk trek ini.",
+        "error_msg": "\nTerdapat ralat berlaku: {}",
+        "loop_restart": "\n--- Memulakan Semula Carian ---"
+    },
+    "tl": {
+        "title": "🎵 Tagahanap ng Naka-sync na Liriko 🎵",
+        "exit_msg": "Paalam! 👋",
+        "song_prompt": "Ipasok ang pangalan ng kanta (o i-type ang 'exit' para umalis): ",
+        "artist_prompt": "Ipasok ang pangalan ng artist (opsyonal): ",
+        "searching": "Naghahanap ng liriko para sa: '{}'...",
+        "no_timestamps": "\n⚠️ Nahanap ang liriko, ngunit WALANG mga timestamp.",
+        "plain_lyrics_prompt": "Gusto mo pa rin bang makita at i-save ang plain lyrics? (y/n): ",
+        "restarting": "\nNagre-restart...",
+        "found_header": "\n--- Nahanap na ang Liriko! ---\n",
+        "save_prompt": "Gusto mo bang i-save ang lirikong ito sa isang text file? (y/n): ",
+        "saved_success": "✅ Matagumpay na na-save ang liriko sa {}",
+        "not_found": "\n❌ Paumanhin, hindi nahanap ang liriko para sa track na ito.",
+        "error_msg": "\nMay naganap na error: {}",
+        "loop_restart": "\n--- Nagre-restart ng Paghahanap ---"
+    },
+    "hr": {
+        "title": "🎵 Pretraživač Sinkroniziranih Tekstova 🎵",
+        "exit_msg": "Doviđenja! 👋",
+        "song_prompt": "Unesite naziv pjesme (ili upišite 'exit' za izlaz): ",
+        "artist_prompt": "Unesite ime izvođača (neobavezno): ",
+        "searching": "Traženje teksta za: '{}'...",
+        "no_timestamps": "\n⚠️ Tekst je pronađen, ali NEMA vremenskih oznaka.",
+        "plain_lyrics_prompt": "Želite li i dalje vidjeti i spremiti običan tekst? (d/n): ",
+        "restarting": "\nPonovno pokretanje...",
+        "found_header": "\n--- Tekst Pronađen! ---\n",
+        "save_prompt": "Želite li spremiti ovaj tekst u tekstualnu datoteku? (d/n): ",
+        "saved_success": "✅ Tekst je uspješno spremljen u {}",
+        "not_found": "\n❌ Nažalost, tekst za ovu pjesmu nije pronađen.",
+        "error_msg": "\nDogodila se pogreška: {}",
+        "loop_restart": "\n--- Ponovno Pokretanje Pretrage ---"
+    },
+    "sr": {
+        "title": "🎵 Претраживач Синхронизованих Текстова 🎵",
+        "exit_msg": "Довиђења! 👋",
+        "song_prompt": "Унесите назив песме (или упишите 'exit' за излаз): ",
+        "artist_prompt": "Унесите име извођача (опционо): ",
+        "searching": "Тражење текста за: '{}'...",
+        "no_timestamps": "\n⚠️ Текст је пронађен, али НЕМА временских ознака.",
+        "plain_lyrics_prompt": "Желите ли и даље да видите и сачувате обичан текст? (д/н): ",
+        "restarting": "\nПоновно покретање...",
+        "found_header": "\n--- Текст Пронађен! ---\n",
+        "save_prompt": "Желите ли да сачувате овај текст у текстуалну датотеку? (д/н): ",
+        "saved_success": "✅ Текст је успешно сачуван у {}",
+        "not_found": "\n❌ Нажалост, текст за ову песму није пронађен.",
+        "error_msg": "\nДогодила се грешка: {}",
+        "loop_restart": "\n--- Поновно Покретање Претраге ---"
+    },
+    "sl": {
+        "title": "🎵 Iskalnik Sinhroniziranih Besedil 🎵",
+        "exit_msg": "Nasvidenje! 👋",
+        "song_prompt": "Vnesite ime pesmi (ali napišite 'exit' za izhod): ",
+        "artist_prompt": "Vnesite ime izvajalca (neobvezno): ",
+        "searching": "Iskanje besedila za: '{}'...",
+        "no_timestamps": "\n⚠️ Besedilo je bilo najdeno, vendar NIMA časovnih žigov.",
+        "plain_lyrics_prompt": "Ali še vedno želite videti in shraniti navadno besedilo? (p/n): ",
+        "restarting": "\nPonovni zagon...",
+        "found_header": "\n--- Besedilo Najdeno! ---\n",
+        "save_prompt": "Ali želite to besedilo shraniti v tekstovno dateko? (p/n): ",
+        "saved_success": "✅ Besedilo uspešno shranjeno v {}",
+        "not_found": "\n❌ Na žalost besedila za to skladbo ni bilo mogoče najti.",
+        "error_msg": "\nPrišlo je do napake: {}",
+        "loop_restart": "\n--- Ponovni Zagon Iskanja ---"
+    },
+    "et": {
+        "title": "🎵 Sünkroonitud Sõnade Otsija 🎵",
+        "exit_msg": "Head aega! 👋",
+        "song_prompt": "Sisestage laulu pealkiri (või kirjutage väljumiseks 'exit'): ",
+        "artist_prompt": "Sisestage esitaja nimi (valikuline): ",
+        "searching": "Laulusõnade otsimine kasutajale: '{}'...",
+        "no_timestamps": "\n⚠️ Sõnad leiti, kuid neil EI OLE ajatempleid.",
+        "plain_lyrics_prompt": "Kas soovite siiski näha ja salvestada tavalisi sõnu? (j/e): ",
+        "restarting": "\nTaaskäivitamine...",
+        "found_header": "\n--- Sõnad Leitud! ---\n",
+        "save_prompt": "Kas soovite need laulusõnad tekstifaili salvestada? (j/e): ",
+        "saved_success": "✅ Laulusõnad edukalt salvestatud asukohta {}",
+        "not_found": "\n❌ Kahjuks ei leitud sellele loole laulusõnu.",
+        "error_msg": "\nTökkis viga: {}",
+        "loop_restart": "\n--- Otsingu Taaskäivitamine ---"
+    },
+    "lv": {
+        "title": "🎵 Sinhronizēto Dziesmu Vārdu Meklētājs 🎵",
+        "exit_msg": "Uz redzēšanos! 👋",
+        "song_prompt": "Ievadiet dziesmas nosaukumu (vai rakstiet 'exit', lai izietu): ",
+        "artist_prompt": "Ievadiet izpildītāja vārdu (pēc izvēles): ",
+        "searching": "Meklē dziesmu vārdus: '{}'...",
+        "no_timestamps": "\n⚠️ Dziesmas vārdi tika atrasti, bet tiem NAV laika zīmogu.",
+        "plain_lyrics_prompt": "Vai joprojām vēlaties redzēt un saglabāt parastos dziesmu vārdus? (j/n): ",
+        "restarting": "\nRestartēšana...",
+        "found_header": "\n--- Dziesmas Vārdi Atrasti! ---\n",
+        "save_prompt": "Vai vēlaties saglabāt šos dziesmu vārdus teksta failā? (j/n): ",
+        "saved_success": "✅ Dziesmas vārdi veiksmīgi saglabāti {}",
+        "not_found": "\n❌ Diemžēl šai dziesmai vārdus neizdevās atrast.",
+        "error_msg": "\nRadās kļūda: {}",
+        "loop_restart": "\n--- Meklēšanas Restartēšana ---"
+    },
+    "lt": {
+        "title": "🎵 Sinchronizuotų Dainų Žodžių Paieška 🎵",
+        "exit_msg": "Viso gero! 👋",
+        "song_prompt": "Įveskite dainos pavadinimą (arba parašykite 'exit', jei norite išeiti): ",
+        "artist_prompt": "Įveskite atlikėjo vardą (neprivaloma): ",
+        "searching": "Ieškoma dainos žodžių: '{}'...",
+        "no_timestamps": "\n⚠️ Žodžiai buvo rasti, tačiau jie NETURI laiko žymų.",
+        "plain_lyrics_prompt": "Ar vis tiek norite pamatyti ir išsaugoti paprastus žodžius? (t/n): ",
+        "restarting": "\nIš naujo paleidžiama...",
+        "found_header": "\n--- Dainos Žodžiai Rasti! ---\n",
+        "save_prompt": "Ar norite išsaugoti šiuos žodžius tekstiniame faile? (t/n): ",
+        "saved_success": "✅ Dainos žodžiai sėkmingai išsaugoti {}",
+        "not_found": "\n❌ Deja, šiam kūriniui žodžių rasti nepavyko.",
+        "error_msg": "\nĮvyko klaida: {}",
+        "loop_restart": "\n--- Paieškos Paleidimas Iš Naujo ---"
+    },
+    "af": {
+        "title": "🎵 Gesinchroniseerde Liedteksoeker 🎵",
+        "exit_msg": "Totsiens! 👋",
+        "song_prompt": "Voer die naam van die liedjie in (of tik 'exit' om af te sluit): ",
+        "artist_prompt": "Voer die kunstenaar se naam in (opsioneel): ",
+        "searching": "Soek na lirieke vir: '{}'...",
+        "no_timestamps": "\n⚠️ Lirieke is gevind, maar hulle het NIE tydstempels nie.",
+        "plain_lyrics_prompt": "Wil u steeds die gewone lirieke sien en stoor? (j/n): ",
+        "restarting": "\nHerbegin tans...",
+        "found_header": "\n--- Lirieke Gevind! ---\n",
+        "save_prompt": "Wil u hierdie lirieke in 'n tekslêer stoor? (j/n): ",
+        "saved_success": "✅ Lirieke is suksesvol gestoor in {}",
+        "not_found": "\n❌ Jammer, lirieke kon nie vir hierdie snit gevind word nie.",
+        "error_msg": "\n'n Fout het voorgekom: {}",
+        "loop_restart": "\n--- Herbegin tans soektog ---"
+    },
+    "sw": {
+        "title": "🎵 Kifaa cha Kupata Nyimbo Zilizosawazishwa 🎵",
+        "exit_msg": "Kwa heri! 👋",
+        "song_prompt": "Ingiza jina la wimbo (au andika 'exit' ili kutoka): ",
+        "artist_prompt": "Ingiza jina la msanii (hiari): ",
+        "searching": "Inatafuta mashairi ya: '{}'...",
+        "no_timestamps": "\n⚠️ Mashairi yalipatikana, lakini HAYANA alama za wakati.",
+        "plain_lyrics_prompt": "Je, bado ungependa kuona na kuhifadhi mashairi ya kawaida? (y/n): ",
+        "restarting": "\nInawasha upya...",
+        "found_header": "\n--- Mashairi Yamepatikana! ---\n",
+        "save_prompt": "Je, untaka kuhifadhi mashairi haya kwenye faili la maandishi? (y/n): ",
+        "saved_success": "✅ Mashairi yamehifadhiwa kwa mafanikio kwenye {}",
+        "not_found": "\n❌ Samahani, mashairi hayakuweza kupatikana kwa wimbo huu.",
+        "error_msg": "\nItilafu imetokea: {}",
+        "loop_restart": "\n--- Inawasha Upya Utafutaji ---"
+    },
+    "ca": {
+        "title": "🎵 Cercador de Lletres Sincronitzades 🎵",
+        "exit_msg": "Adéu! 👋",
+        "song_prompt": "Introdueix el nom de la cançó (o escriu 'exit' per sortir): ",
+        "artist_prompt": "Introdueix el nom de l'artista (opcional): ",
+        "searching": "Buscant lletra per a: '{}'...",
+        "no_timestamps": "\n⚠️ S'han trobat lletres, però NO tenen marques de temps.",
+        "plain_lyrics_prompt": "Encara voldries veure i desar la lletra senzilla? (s/n): ",
+        "restarting": "\nReiniciant...",
+        "found_header": "\n--- Lletra Trobada! ---\n",
+        "save_prompt": "Vols desar aquesta lletra en un fitxer de text? (s/n): ",
+        "saved_success": "✅ Lletra desada correctament a {}",
+        "not_found": "\n❌ Ho sentim, no s'ha pogut trobar la lletra d'aquesta pista.",
+        "error_msg": "\nS'ha produït un error: {}",
+        "loop_restart": "\n--- Reiniciant la Cerca ---"
+    },
+    "gl": {
+        "title": "🎵 Buscador de Letras Sincronizadas 🎵",
+        "exit_msg": "Adiós! 👋",
+        "song_prompt": "Introduce o nome da canción (ou escribe 'exit' para saír): ",
+        "artist_prompt": "Introduce o nome do artista (opcional): ",
+        "searching": "Buscando letra para: '{}'...",
+        "no_timestamps": "\n⚠️ Atopáronse letras, pero NON teñen marcas de temps.",
+        "plain_lyrics_prompt": "Aínda así desexas ver e gardar a letra simple? (s/n): ",
+        "restarting": "\nReiniciando...",
+        "found_header": "\n--- Letra Atopada! ---\n",
+        "save_prompt": "Queres gardar esta letra nun ficheiro de text? (s/n): ",
+        "saved_success": "✅ Letra gardada con éxito en {}",
+        "not_found": "\n❌ Sentímolo, non se puido atopar a letra desta pista.",
+        "error_msg": "\nOcorreu un erro: {}",
+        "loop_restart": "\n--- Reiniciando Busca ---"
+    },
+    "eu": {
+        "title": "🎵 Sinkronizatutako Letren Bilatzailea 🎵",
+        "exit_msg": "Agur! 👋",
+        "song_prompt": "Sartu abestiaren izena (edo idatzi 'exit' saioa amaitzeko): ",
+        "artist_prompt": "Sartu artistaren izena (auzirako): ",
+        "searching": "'{}'(r)en letra bilatzen...",
+        "no_timestamps": "\n⚠️ Letra aurkitu da, baina EZ du denbora-markarik.",
+        "plain_lyrics_prompt": "Hala ere letra arrunta ikusi eta gorde nahi duzu? (b/e): ",
+        "restarting": "\nBerrabiarazten...",
+        "found_header": "\n--,- Letra Aurkituta! ---\n",
+        "save_prompt": "Letra hau testu-fitxategi batean gorde nahi duzu? (b/e): ",
+        "saved_success": "✅ Letra ondo gorde da hemen: {}",
+        "not_found": "\n❌ Barkatu, ezin izan da abesti honen letra aurkitu.",
+        "error_msg": "\nErrore bat gertatu da: {}",
+        "loop_restart": "\n--- Bilaketa berrabiarazten ---"
+    },
+    "ga": {
+        "title": "🎵 Lorgaire Liricí Sioncronaithe 🎵",
+        "exit_msg": "Slán! 👋",
+        "song_prompt": "Cuir isteach ainm an amhráin (nó clóscríobh 'exit' chun scor): ",
+        "artist_prompt": "Cuir isteach ainm an ealaíontóra (roghnach): ",
+        "searching": "Ag cuardach liricí le haghaidh: '{}'...",
+        "no_timestamps": "\n⚠️ Aimsíodh liricí, ach NÍL aon stampáil ama acu.",
+        "plain_lyrics_prompt": "Ar mhaith leat fós na liricí simplí a fheiceáil agus a shábháil? (s/n): ",
+        "restarting": "\nAg atosú...",
+        "found_header": "\n--- Liricí Aimsithe! ---\n",
+        "save_prompt": "Ar mhaith leat na liricí seo a shábháil i gcomhad téacs? (s/n): ",
+        "saved_success": "✅ Shábháil na liricí go rathúil i {}",
+        "not_found": "\n❌ Tá brón orainn, níorbh fhéidir liricí a aimsiú don amhrán seo.",
+        "error_msg": "\nTarlaigh earráid: {}",
+        "loop_restart": "\n--- Cuardach á Atosú ---"
+    },
+    "cy": {
+        "title": "🎵 Peiriant Chwilio Geiriau Synchronized 🎵",
+        "exit_msg": "Hwyl fawr! 👋",
+        "song_prompt": "Rhowch enw'r gân (neu teipiwch 'exit' i adael): ",
+        "artist_prompt": "Rhowch enw'r artist (dewisol): ",
+        "searching": "Chwilio am eiriau ar gyfer: '{}'...",
+        "no_timestamps": "\n⚠️ Daethpwyd o hyd i eiriau, ond nid oes ganddynt nodau amser.",
+        "plain_lyrics_prompt": "A fyddech chi'n dal eisiau gweld ac arbed y geiriau syml? (y/n): ",
+        "restarting": "\nAilddechrau...",
+        "found_header": "\n--- Geiriau Wedi Eu Canfod! ---\n",
+        "save_prompt": "Ydych chi am gadw'r geiriau hyn i ffeil destun? (y/n): ",
+        "saved_success": "✅ Arbedwyd y geiriau yn llwyddiannus i {}",
+        "not_found": "\n❌ Sori, nid oedd modd dod o hyd i eiriau ar gyfer y gân hon.",
+        "error_msg": "\nDigwyddodd gwall: {}",
+        "loop_restart": "\n--- Ailddechrau Chwilio ---"
+    },
+    "az": {
+        "title": "🎵 Sinxronlaşdırılmış Mahnı Sözü Tapıcı 🎵",
+        "exit_msg": "Sağ olun! 👋",
+        "song_prompt": "Mahnı adını daxil edin (və ya çıxmaq üçün 'exit' yazın): ",
+        "artist_prompt": "Müəllif adını daxil edin (isteğe bağlı): ",
+        "searching": "'{}' üçün mahnı sözləri axtarılır...",
+        "no_timestamps": "\n⚠️ Mahnı sözləri tapıldı, lakin zaman damğası yoxdur.",
+        "plain_lyrics_prompt": "Düz mahnı sözlərini yenə də görmək və yadda saxlamaq istəyirsiniz? (b/x): ",
+        "restarting": "\nYenidən başladılır...",
+        "found_header": "\n--- Mahnı Sözləri Tapıldı! ---\n",
+        "save_prompt": "Bu mahnı sözlərini mətn faylına saxlamaq istəyirsiniz? (b/x): ",
+        "saved_success": "✅ Mahnı sözləri uğurla {} faylına saxlanıldı",
+        "not_found": "\n❌ Təəssüf ki, bu trek üçün mahnı sözü tapılmadı.",
+        "error_msg": "\nXəta baş verdi: {}",
+        "loop_restart": "\n--- Axtarış Yenidən Başladılır ---"
+    },
+    "am": {
+        "title": "🎵 የተቀናበረ የዘፈን ግጥም ፈላጊ 🎵",
+        "exit_msg": "ደህና ሁን! 👋",
+        "song_prompt": "የዘፈኑን ስም ያስገቡ (ወይም ለመውጣት 'exit' ብለው ይፃፉ)፡ ",
+        "artist_prompt": "የአርቲስቱን ስም ያስገቡ (አማራጭ)፡ ",
+        "searching": "ለ '{}' ግጥም በመፈለግ ላይ...",
+        "no_timestamps": "\n⚠️ ግጥም ተገኝቷል ነገር ግን የሰዓት ማህተም የለውም።",
+        "plain_lyrics_prompt": "አሁንም ተራውን ግጥም ለማየት እና ለማስቀመጥ ይፈልጋሉ? (y/n)፡ ",
+        "restarting": "\nእንደገና በማስጀመር ላይ...",
+        "found_header": "\n--- ግጥም ተገኝቷል! ---\n",
+        "save_prompt": "ይህን ግጥም በጽሑፍ ፋይል ላይ ማስቀመጥ ይፈልጋሉ? (y/n)፡ ",
+        "saved_success": "✅ ግጥም በተሳካ ሁኔታ በ {} ላይ ተቀምጧል",
+        "not_found": "\n❌ ይቅርታ፣ ለዚህ ዘፈን ግጥም አልተገኘም።",
+        "error_msg": "\nስህተት ተከስቷል: {}",
+        "loop_restart": "\n--- ፍለጋን እንደገና በማስጀመር ላይ ---"
+    },
+    "hy": {
+        "title": "🎵 Սինխրոնիզացված երգերի բառերի որոնիչ 🎵",
+        "exit_msg": "Ցտեսություն 👋",
+        "song_prompt": "Մուտքագրեք երգի անվանումը (կամ գրեք 'exit' դուրս գալու համար)՝ ",
+        "artist_prompt": "Մուտքագրեք կատարողի անունը (ըստ ցանկության)՝ ",
+        "searching": "Որոնվում են երգի բառերը '{}'-ի համար...",
+        "no_timestamps": "\n⚠️ Երգի բառերը գտնվել են, բայց ժամանակային նշումներ չունեն:",
+        "plain_lyrics_prompt": "Ցանկանու՞մ եք տեսնել և պահպանել սովորական տեքստը: (y/n)՝ ",
+        "restarting": "\nՎերագործարկում...",
+        "found_header": "\n--- Երգի բառերը գտնված են ---\n",
+        "save_prompt": "Ցանկանու՞մ եք պահպանել այս բառերը տեքստային ֆայլում: (y/n)՝ ",
+        "saved_success": "✅ Երգի բառերը հաջողությամբ պահպանվեցին {}-ում",
+        "not_found": "\n❌ Ցավոք, այս երգի բառերը չեն գտնվել:",
+        "error_msg": "\nԱռաջացավ սխալ. {}",
+        "loop_restart": "\n--- Որոնման վերագործարկում ---"
+    },
+    "be": {
+        "title": "🎵 Пошук сінхранізаванага тэксту песень 🎵",
+        "exit_msg": "Да пабачэння! 👋",
+        "song_prompt": "Увядзіце назву песні (або 'exit' для выхаду): ",
+        "artist_prompt": "Увядзіце імя выканаўцы (неабавязкова): ",
+        "searching": "Пошук тэксту для: '{}'...",
+        "no_timestamps": "\n⚠️ Тэкст знойдзены, але НЕ мае часавых метак.",
+        "plain_lyrics_prompt": "Ці жадаеце вы прагледзець і захаваць звычайны тэкст? (y/n): ",
+        "restarting": "\nПеразапуск...",
+        "found_header": "\n--- Тэкст знойдзены! ---\n",
+        "save_prompt": "Хочаце захаваць гэты тэкст у тэкставы файл? (y/n): ",
+        "saved_success": "✅ Тэкст паспяхова захаваны ў {}",
+        "not_found": "\n❌ На жаль, тэкст для гэтага трэка не знойдзены.",
+        "error_msg": "\nАдбылася памылка: {}",
+        "loop_restart": "\n--- Перазапуск пошуку ---"
+    },
+    "bs": {
+        "title": "🎵 Pronalazač Sinhronizovanih Tekstova 🎵",
+        "exit_msg": "Doviđenja! 👋",
+        "song_prompt": "Unesite naziv pjesme (ili upišite 'exit' za izlaz): ",
+        "artist_prompt": "Unesite ime izvođača (opciono): ",
+        "searching": "Traženje teksta za: '{}'...",
+        "no_timestamps": "\n⚠️ Tekst je pronađen, ali NEMA vremenskih oznaka.",
+        "plain_lyrics_prompt": "Želite li i dalje vidjeti i sačuvati običan tekst? (y/n): ",
+        "restarting": "\nPonovno pokretanje...",
+        "found_header": "\n--- Tekst Pronađen! ---\n",
+        "save_prompt": "Želite li sačuvati ovaj tekst u tekstualnu datoteku? (y/n): ",
+        "saved_success": "✅ Tekst je uspješno sačuvan u {}",
+        "not_found": "\n❌ Nažalost, tekst za ovu pjesmu nije pronađen.",
+        "error_msg": "\nDošlo je do greške: {}",
+        "loop_restart": "\n--- Ponovno Pokretanje Pretrage ---"
+    },
+    "km": {
+        "title": "🎵 កម្មវិធីស្វែងរកអត្ថបទចម្រៀងសមកាលកម្ម 🎵",
+        "exit_msg": "លាហើយ! 👋",
+        "song_prompt": "បញ្ចូលឈ្មោះបទចម្រៀង (ឬវាយ 'exit' ដើម្បីចាកចេញ): ",
+        "artist_prompt": "បញ្ចូលឈ្មោះអ្នកចម្រៀង (ជម្រើស): ",
+        "searching": "កំពុងស្វែងរកអត្ថបទចម្រៀងសម្រាប់៖ '{}'...",
+        "no_timestamps": "\n⚠️ រកឃើញអត្ថបទចម្រៀង ប៉ុន្តែវាមិនមានត្រាពេលវេលាទេ។",
+        "plain_lyrics_prompt": "តើអ្នកនៅតែចង់មើល និងរក្សាទុកអត្ថបទចម្រៀងធម្មតាទេ? (y/n): ",
+        "restarting": "\nកំពុងចាប់ផ្ដើមឡើងវិញ...",
+        "found_header": "\n--- រកឃើញអត្ថបទចម្រៀង! ---\n",
+        "save_prompt": "តើអ្នកចង់រក្សាទុកអត្ថបទចម្រៀងនេះទៅក្នុងឯកសារអត្ថបទទេ? (y/n): ",
+        "saved_success": "✅ រក្សាទុកអត្ថបទចម្រៀងដោយជោគជ័យទៅ {}",
+        "not_found": "\n❌ សូមអភ័យទោស រកមិនឃើញអត្ថបទចម្រៀងសម្រាប់បទនេះទេ។",
+        "error_msg": "\nមានបញ្ហាកើតឡើង៖ {}",
+        "loop_restart": "\n--- ចាប់ផ្ដើមការស្វែងរកឡើងវិញ ---"
+    },
+    "ka": {
+        "title": "🎵 სინქრონიზებული ტექსტების საძიებო 🎵",
+        "exit_msg": "ნახვამდის! 👋",
+        "song_prompt": "შეიყვანეთ სიმღერის სახელი (ან 'exit' გამოსასვლელად): ",
+        "artist_prompt": "შეიყვანეთ შემსრულებლის სახელი (არასავალდებულო): ",
+        "searching": "ვეძებთ ტექსტს: '{}'...",
+        "no_timestamps": "\n⚠️ ტექსტი ნაპოვნია, მაგრამ არ აქვს დროის ნიშნულები.",
+        "plain_lyrics_prompt": "გსურთ უბრალო ტექსტის ნახვა და შენახვა? (y/n): ",
+        "restarting": "\nგადატვირთვა...",
+        "found_header": "\n--- ტექსტი ნაპოვნია! ---\n",
+        "save_prompt": "გსურთ ამ ტექსტის შენახვა ფაილში? (y/n): ",
+        "saved_success": "✅ ტექსტი წარმატებით შეინახა {}-ში",
+        "not_found": "\n❌ სამწუხაროდ, ამ სიმღერის ტექსტი ვერ მოიძებნა.",
+        "error_msg": "\nმოხდა შეცდომა: {}",
+        "loop_restart": "\n--- ძიების გადატვირთვა ---"
+    },
+    "gu": {
+        "title": "🎵 સિંક કરેલા ગીતો શોધક 🎵",
+        "exit_msg": "આવજો! 👋",
+        "song_prompt": "ગીતનું નામ દાખલ કરો (અથવા બહાર નીકળવા માટે 'exit' લખો): ",
+        "artist_prompt": "કલાકારનું નામ દાખલ કરો (વૈકલ્પિક): ",
+        "searching": "'{}' માટે ગીતો શોધી રહ્યા છીએ...",
+        "no_timestamps": "\n⚠️ ગીતો મળી ગયા, પરંતુ તેમાં સમયસ્ટેમ્પ્સ નથી.",
+        "plain_lyrics_prompt": "શું તમે હજી પણ સાદા ગીતો જોવા અને સાચવવા માંગો છો? (y/n): ",
+        "restarting": "\nફરીથી શરૂ કરી રહ્યા છીએ...",
+        "found_header": "\n--- ગીતો મળી ગયા! ---\n",
+        "save_prompt": "શું તમે આ ગીતો ટેક્સ્ટ ફાઇલમાં સાચવવા માંગો છો? (y/n): ",
+        "saved_success": "✅ ગીતો સફળતાપૂર્વક {} માં સાચવવામાં આવ્યા",
+        "not_found": "\n❌ માફ કરશો, આ ટ્રેક માટે ગીતો શોધી શક્યા નથી.",
+        "error_msg": "\nએક ભૂલ આવી: {}",
+        "loop_restart": "\n--- શોધ ફરીથી શરૂ કરી રહ્યા છીએ ---"
+    },
+    "ha": {
+        "title": "🎵 Mai Neman Rubutun Waƙa Mai Daidaitawa 🎵",
+        "exit_msg": "Sai an jima! 👋",
+        "song_prompt": "Shigar da sunan waƙar (ko rubuta 'exit' don fita): ",
+        "artist_prompt": "Shigar da sunan mawaƙin (na zaɓi): ",
+        "searching": "Ana neman rubutun waƙa don: '{}'...",
+        "no_timestamps": "\n⚠️ An sami rubutun waƙa, amma ba su da tambarin lokaci.",
+        "plain_lyrics_prompt": "Shin har yanzu kuna son gani da adana rubutun waƙar na al'ada? (y/n): ",
+        "restarting": "\nSake farawa...",
+        "found_header": "\n--- An Sami Rubutun Waƙa! ---\n",
+        "save_prompt": "Kuna son adana wannan rubutun waƙar a cikin fayil ɗin rubutu? (y/n): ",
+        "saved_success": "✅ An yi nasarar adana rubutun waƙa a {}",
+        "not_found": "\n❌ Yi haƙuri, ba a sami rubutun waƙar wannan ba.",
+        "error_msg": "\nAn sami matsala: {}",
+        "loop_restart": "\n--- Sake Fara Nema ---"
+    },
+    "ig": {
+        "title": "🎵 Onye Na-achọ Egwu Ejikọtara 🎵",
+        "exit_msg": "Ka ọ dị! 👋",
+        "song_prompt": "Tinye aha egwu (ma ọ bụ pịnye 'exit' iji pụọ): ",
+        "artist_prompt": "Tinye aha onye na-abụ abụ (nhọrọ): ",
+        "searching": "Na-achọ egwu maka: '{}'...",
+        "no_timestamps": "\n⚠️ Achọtara egwu, mana ha ENWEGHỊ akara oge.",
+        "plain_lyrics_prompt": "Ị ka ga-achọ ịhụ na ịchekwa egwu nkịtị ahụ? (y/n): ",
+        "restarting": "\nNa-amalitekwa...",
+        "found_header": "\n--- Achọtara Egwu! ---\n",
+        "save_prompt": "Ị chọrọ ịchekwa egwu ndị a na faịlụ ederede? (y/n): ",
+        "saved_success": "✅ Echekwara egwu nke ọma na {}",
+        "not_found": "\n❌ Ndo, enweghị ike ịchọta egwu maka egwu a.",
+        "error_msg": "\nNjehie mere: {}",
+        "loop_restart": "\n--- Na-amalitekwa Ọchụchọ ---"
+    },
+    "kn": {
+        "title": "🎵 ಸಿಂಕ್ ಮಾಡಿದ ಸಾಹಿತ್ಯ ಶೋಧಕ 🎵",
+        "exit_msg": "ವಿದಾಯ! 👋",
+        "song_prompt": "ಹಾಡಿನ ಹೆಸರನ್ನು ನಮೂದಿಸಿ (ಅಥವಾ ನಿರ್ಗಮಿಸಲು 'exit' ಎಂದು ಟೈಪ್ ಮಾಡಿ): ",
+        "artist_prompt": "ಗಾಯಕನ ಹೆಸರನ್ನು ನಮೂದಿಸಿ (ಐಚ್ಛಿಕ): ",
+        "searching": "'{}' ಗಾಗಿ ಸಾಹಿತ್ಯವನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ...",
+        "no_timestamps": "\n⚠️ ಸಾಹಿತ್ಯ ಕಂಡುಬಂದಿದೆ, ಆದರೆ ಅವುಗಳು ಟೈಮ್‌ಸ್ಟ್ಯಾಂಪ್‌ಗಳನ್ನು ಹೊಂದಿಲ್ಲ.",
+        "plain_lyrics_prompt": "ನೀವು ಇನ್ನೂ ಸರಳ ಸಾಹಿತ್ಯವನ್ನು ನೋಡಲು ಮತ್ತು ಉಳಿಸಲು ಬಯಸುವಿರಾ? (y/n): ",
+        "restarting": "\nಮರುಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...",
+        "found_header": "\n--- ಸಾಹಿತ್ಯ ಕಂಡುಬಂದಿದೆ! ---\n",
+        "save_prompt": "ಈ ಸಾಹಿತ್ಯವನ್ನು ಪಠ್ಯ ಫೈಲ್‌ನಲ್ಲಿ ಉಳಿಸಲು ನೀವು ಬಯಸುವಿರಾ? (y/n): ",
+        "saved_success": "✅ ಸಾಹಿತ್ಯವನ್ನು ಯಶಸ್ವಿಯಾಗಿ {} ಗೆ ಉಳಿಸಲಾಗಿದೆ",
+        "not_found": "\n❌ ಕ್ಷಮಿಸಿ, ಈ ಟ್ರ್ಯಾಕ್‌ಗಾಗಿ ಸಾಹಿತ್ಯವನ್ನು ಹುಡುಕಲಾಗಲಿಲ್ಲ.",
+        "error_msg": "\nದೋಷ ಸಂಭವಿಸಿದೆ: {}",
+        "loop_restart": "\n--- ಹುಡುಕಾಟವನ್ನು ಮರುಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ ---"
+    },
+    "kk": {
+        "title": "🎵 Синхрондалған ән мәтінін іздеуші 🎵",
+        "exit_msg": "Сау болыңыз! 👋",
+        "song_prompt": "Ән атауын енгізіңіз (немесе шығу үшін 'exit' теріңіз): ",
+        "artist_prompt": "Орындаушының атын енгізіңіз (міндетті емес): ",
+        "searching": "'{}' үшін ән мәтіні ізделуде...",
+        "no_timestamps": "\n⚠️ Ән мәтіні табылды, бірақ оларда уақыт белгілері ЖОҚ.",
+        "plain_lyrics_prompt": "Қарапайым мәтінді көріп, сақтағыңыз келе ме? (y/n): ",
+        "restarting": "\nҚайта іске қосылуда...",
+        "found_header": "\n--- Ән мәтіні табылды! ---\n",
+        "save_prompt": "Бұл мәтінді мәтіндік файлға сақтағыңыз келе ме? (y/n): ",
+        "saved_success": "✅ Ән мәтіні {} файлына сәтті сақталды",
+        "not_found": "\n❌ Кешіріңіз, бұл трек үшін ән мәтіні табылмады.",
+        "error_msg": "\nҚате орын алды: {}",
+        "loop_restart": "\n--- Іздеуді қайта іске қосу ---"
+    },
+    "ku": {
+        "title": "🎵 Lênêrînerê Gotinên Stranan ê Senkronîzekirî 🎵",
+        "exit_msg": "Xatirê te! 👋",
+        "song_prompt": "Navê stranê binivîse (an ji bo derketinê 'exit' binivîse): ",
+        "artist_prompt": "Navê hunermend binivîse (bijartî): ",
+        "searching": "Ji bo '{}' gotin têne lêgerîn...",
+        "no_timestamps": "\n⚠️ Gotin hatin dîtin, lê demjimêrên wan TUNE.",
+        "plain_lyrics_prompt": "Ma tu hîn jî dixwazî gotinên sade bibînî û hilînî? (y/n): ",
+        "restarting": "\nJi nû ve tê destpêkirin...",
+        "found_header": "\n--- Gotin Hatin Dîtin! ---\n",
+        "save_prompt": "Tu dixwazî van gotinan di pelgeheke nivîsê de hilînî? (y/n): ",
+        "saved_success": "✅ Gotin bi serkeftî li {} hatin hilanîn",
+        "not_found": "\n❌ Bibore, ji bo vê stranê gotin nehatin dîtin.",
+        "error_msg": "\nÇewtiyek çêbû: {}",
+        "loop_restart": "\n--- Lêgerîn Ji Nû Ve Tê Destpêkirin ---"
+    },
+    "ky": {
+        "title": "🎵 Синхрондолгон Ырдын Текстин Издөөчү 🎵",
+        "exit_msg": "Көрүшкөнчө! 👋",
+        "song_prompt": "Ырдын атын киргизиңиз (же чыгуу үчүн 'exit' деп жазыңыз): ",
+        "artist_prompt": "Аткаруучунун атын киргизиңиз (милдеттүү эмес): ",
+        "searching": "'{}' үчүн ырдын тексти изделүүдө...",
+        "no_timestamps": "\n⚠️ Ырдын тексти табылды, бирок аларда убакыт белгилери ЖОК.",
+        "plain_lyrics_prompt": "Жөнөкөй текстти көрүп жана сактагыңыз келеби? (y/n): ",
+        "restarting": "\nКайра ишке киргизилүүдө...",
+        "found_header": "\n--- Ырдын Тексти Табылды! ---\n",
+        "save_prompt": "Бул текстти тексттик файлга сактагыңыз келеби? (y/n): ",
+        "saved_success": "✅ Ырдын тексти {} файлына ийгиликтүү сакталды",
+        "not_found": "\n❌ Кечиресиз, бул трек үшін ырдын тексти табылган жок.",
+        "error_msg": "\nКата кетти: {}",
+        "loop_restart": "\n--- Издөөнү Кайра Ишке Киргизүү ---"
+    },
+    "lo": {
+        "title": "🎵 ໂປຣແກຣມຊອກຫາເນື້ອເພງແບບຊິງຄ໌ 🎵",
+        "exit_msg": "ລາກ່ອນ! 👋",
+        "song_prompt": "ປ້ອນຊື່ເພງ (ຫຼືພິມ 'exit' ເພື່ອອອກ): ",
+        "artist_prompt": "ປ້ອນຊື່ນັກຮ້ອງ (ບໍ່ບັງຄັບ): ",
+        "searching": "ກຳລັງຊອກຫາເນື້ອເພງສຳລັບ: '{}'...",
+        "no_timestamps": "\n⚠️ ພົບເນື້ອເພງ, ແຕ່ພວກມັນບໍ່ມີສະແຕັມເວລາ.",
+        "plain_lyrics_prompt": "ທ່ານຍັງຕ້ອງການເບິ່ງ ແລະບັນທຶກເນື້ອເພງແບບທຳມະດາຢູ່ບໍ? (y/n): ",
+        "restarting": "\nກຳລັງເລີ່ມໃໝ່...",
+        "found_header": "\n--- ພົບເນື້ອເພງແລ້ວ! ---\n",
+        "save_prompt": "ທ່ານຕ້ອງການບັນທຶກເນື້ອເພງເຫຼົ່ານີ້ລົງໃນໄຟລ໌ຂໍ້ຄວາມບໍ? (y/n): ",
+        "saved_success": "✅ ບັນທຶກເນື້ອເພງລົງໃນ {} ສຳເລັດແລ້ວ",
+        "not_found": "\n❌ ຂໍອະໄພ, ບໍ່ພົບເນື້ອເພງສຳລັບເພງນີ້.",
+        "error_msg": "\nເກີດຂໍ້ຜິດພາດ: {}",
+        "loop_restart": "\n--- ກຳລັງເລີ່ມການຊອກຫາໃໝ່ ---"
+    },
+    "mk": {
+        "title": "🎵 Пронаоѓач на Синхронизирани Текстови 🎵",
+        "exit_msg": "Довидување! 👋",
+        "song_prompt": "Внесете име на песната (или напишете 'exit' за излез): ",
+        "artist_prompt": "Внесете име на изведувачот (опционално): ",
+        "searching": "Пребарување текст за: '{}'...",
+        "no_timestamps": "\n⚠️ Текстот е пронајден, но НЕМА временски ознаки.",
+        "plain_lyrics_prompt": "Дали сè уште сакате да го видите и зачувате обичниот текст? (y/n): ",
+        "restarting": "\nРестартирање...",
+        "found_header": "\n--- Текстот е Пронајден! ---\n",
+        "save_prompt": "Дали сакате да го зачувате овој текст во текстуална датотека? (y/n): ",
+        "saved_success": "✅ Текстот е успешно зачуван во {}",
+        "not_found": "\n❌ За жал, текстот за оваа песна не беше пронајден.",
+        "error_msg": "\nСе случи грешка: {}",
+        "loop_restart": "\n--- Рестартирање на Пребарувањето ---"
+    },
+    "ml": {
+        "title": "🎵 സിങ്ക് ചെയ്ത വരികൾ കണ്ടെത്തുന്നതിനുള്ള സംവിധാനം 🎵",
+        "exit_msg": "വിട! 👋",
+        "song_prompt": "പാട്ടിന്റെ പേര് നൽകുക (അല്ലെങ്കിൽ പുറത്തുകടക്കാൻ 'exit' എന്ന് ടൈപ്പ് ചെയ്യുക): ",
+        "artist_prompt": "കലാകാരന്റെ പേര് നൽകുക (ഓപ്ഷണൽ): ",
+        "searching": "'{}' എന്നതിനായുള്ള വരികൾ തിരയുന്നു...",
+        "no_timestamps": "\n⚠️ വരികൾ കണ്ടെത്തി, എന്നാൽ അവയിൽ സമയമുദ്രകളില്ല.",
+        "plain_lyrics_prompt": "ലളിതമായ വരികൾ കാണാനും സംരക്ഷിക്കാനും നിങ്ങൾ ഇപ്പോഴും ആഗ്രഹിക്കുന്നുണ്ടോ? (y/n): ",
+        "restarting": "\nപുനരാരംഭിക്കുന്നു...",
+        "found_header": "\n--- വരികൾ കണ്ടെത്തി! ---\n",
+        "save_prompt": "ഈ വരികൾ ഒരു ടെക്സ്റ്റ് ഫയലിലേക്ക് സംരക്ഷിക്കാൻ നിങ്ങൾ ആഗ്രഹിക്കുന്നുണ്ടോ? (y/n): ",
+        "saved_success": "✅ വരികൾ {} എന്നതിലേക്ക് വിജയകരമായി സംരക്ഷിച്ചു",
+        "not_found": "\n❌ ക്ഷമിക്കണം, ഈ ട്രാക്കിനായുള്ള വരികൾ കണ്ടെത്താനായില്ല.",
+        "error_msg": "\nഒരു പിശക് സംഭവിച്ചു: {}",
+        "loop_restart": "\n--- തിരയൽ പുനരാരംഭിക്കുന്നു ---"
+    },
+    "mr": {
+        "title": "🎵 सिंक केलेले बोल शोधक 🎵",
+        "exit_msg": "निरोप! 👋",
+        "song_prompt": "गाण्याचे नाव प्रविष्ट करा (किंवा बाहेर पडण्यासाठी 'exit' टाइप करा): ",
+        "artist_prompt": "कलाकाराचे नाव प्रविष्ट करा (पर्यायी): ",
+        "searching": "'{}' साठी बोल शोधत आहे...",
+        "no_timestamps": "\n⚠️ बोल सापडले, परंतु त्यांच्यात टाइमस्टॅम्प नाहीत.",
+        "plain_lyrics_prompt": "आपल्याला अजूनही साधे बोल पहायचे आणि जतन करायचे आहेत का? (y/n): ",
+        "restarting": "\nपुन्हा सुरू करत आहे...",
+        "found_header": "\n--- बोल सापडले! ---\n",
+        "save_prompt": "तुम्हाला हे बोल टेक्स्ट फाइलमध्ये जतन करायचे आहेत का? (y/n): ",
+        "saved_success": "✅ बोल यशस्वीरित्या {} मध्ये जतन केले",
+        "not_found": "\n❌ क्षमस्व, या ट्रॅकसाठी बोल सापडले नाहीत.",
+        "error_msg": "\nएक त्रुटी आली: {}",
+        "loop_restart": "\n--- शोध पुन्हा सुरू करत आहे ---"
+    },
+    "mn": {
+        "title": "🎵 Синхрончилсон дууны үг хайгч 🎵",
+        "exit_msg": "Баяртай! 👋",
+        "song_prompt": "Дууны нэрийг оруулна уу (эсвэл гарахын тулд 'exit' гэж бичнэ үү): ",
+        "artist_prompt": "Уран бүтээлчийн нэрийг оруулна уу (заавал биш): ",
+        "searching": "'{}'-д зориулсан үгийг хайж байна...",
+        "no_timestamps": "\n⚠️ Дууны үг олдсон боловч цагийн тэмдэглэгээГҮЙ байна.",
+        "plain_lyrics_prompt": "Та энгийн үгийг харж, хадгалахыг хүссэн хэвээр байна уу? (y/n): ",
+        "restarting": "\nДахин эхлүүлж байна...",
+        "found_header": "\n--- Дууны Үг Олдлоо! ---\n",
+        "save_prompt": "Та эдгээр үгийг текст файл руу хадгалахыг хүсэж байна уу? (y/n): ",
+        "saved_success": "✅ Дууны үгийг {} руу амжилттай хадгаллаа",
+        "not_found": "\n❌ Уучлаарай, энэ дууны үг олдсонгүй.",
+        "error_msg": "\nАлдаа гарлаа: {}",
+        "loop_restart": "\n--- Хайлтыг дахин эхлүүлж байна ---"
+    },
+    "ne": {
+        "title": "🎵 सिंक गरिएको लिरिक्स खोज्ने उपकरण 🎵",
+        "exit_msg": "बिदा! 👋",
+        "song_prompt": "गीतको नाम प्रविष्ट गर्नुहोस् (वा बाहिर निस्कन 'exit' टाइप गर्नुहोस्): ",
+        "artist_prompt": "कलाकारको नाम प्रविष्ट गर्नुहोस् (वैकल्पिक): ",
+        "searching": "'{}' को लागि लिरिक्स खोज्दै...",
+        "no_timestamps": "\n⚠️ लिरिक्स फेला पर्‍यो, तर तिनीहरूसँग टाइमस्ट्याम्पहरू छैनन्।",
+        "plain_lyrics_prompt": "के तपाईं अझै पनि सादा लिरिक्स हेर्न र बचत गर्न चाहनुहुन्छ? (y/n): ",
+        "restarting": "\nपुनः सुरु गर्दै...",
+        "found_header": "\n--- लिरिक्स फेला पर्‍यो! ---\n",
+        "save_prompt": "के तपाईं यी लिरिक्स पाठ फाइलमा बचत गर्न चाहनुहुन्छ? (y/n): ",
+        "saved_success": "✅ लिरिक्स सफलतापूर्वक {} मा बचत भयो",
+        "not_found": "\n❌ माफ गर्नुहोस्, यस ट्र्याकको लागि लिरिक्स फेला पार्न सकिएन।",
+        "error_msg": "\nएउटा त्रुटि भयो: {}",
+        "loop_restart": "\n--- खोज पुनः सुरु गर्दै ---"
+    },
+    "pa": {
+        "title": "🎵 ਸਿੰਕ ਕੀਤੇ ਬੋਲ ਲੱਭਣ ਵਾਲਾ 🎵",
+        "exit_msg": "ਅਲਵਿਦਾ! 👋",
+        "song_prompt": "ਗਾਣੇ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ (ਜਾਂ ਬਾਹਰ ਨਿਕਲਣ ਲਈ 'exit' ਟਾਈਪ ਕਰੋ): ",
+        "artist_prompt": "ਕਲਾਕਾਰ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ (ਵਿਕਲਪਿਕ): ",
+        "searching": "'{}' ਲਈ ਬੋਲ ਲੱਭੇ ਜਾ ਰਹੇ ਹਨ...",
+        "no_timestamps": "\n⚠️ ਬੋਲ ਮਿਲ ਗਏ ਹਨ, ਪਰ ਉਹਨਾਂ ਵਿੱਚ ਟਾਈਮਸਟੈਂਪ ਨਹੀਂ ਹਨ।",
+        "plain_lyrics_prompt": "ਕੀ ਤੁਸੀਂ ਅਜੇ ਵੀ ਸਾਦੇ ਬੋਲ ਵੇਖਣਾ ਅਤੇ ਸੁਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੋਗੇ? (y/n): ",
+        "restarting": "\nਮੁੜ ਚਾਲੂ ਹੋ ਰਿਹਾ ਹੈ...",
+        "found_header": "\n--- ਬੋਲ ਮਿਲ ਗਏ! ---\n",
+        "save_prompt": "ਕੀ ਤੁਸੀਂ ਇਹਨਾਂ ਬੋਲਾਂ ਨੂੰ ਟੈਕਸਟ ਫਾਈਲ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ? (y/n): ",
+        "saved_success": "✅ ਬੋਲ ਸਫਲਤਾਪੂਰਵਕ {} ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਕੀਤੇ ਗਏ",
+        "not_found": "\n❌ ਮੁਆਫ ਕਰਨਾ, ਇਸ ਟਰੈਕ ਲਈ ਬੋਲ ਨਹੀਂ ਮਿਲ ਸਕੇ।",
+        "error_msg": "\nਇੱਕ ਗਲਤੀ ਆਈ: {}",
+        "loop_restart": "\n--- ਖੋਜ ਮੁੜ ਚਾਲੂ ਹੋ ਰਹੀ ਹੈ ---"
+    },
+    "si": {
+        "title": "🎵 සමමුහුර්ත කළ පද රචනා සෙවුම 🎵",
+        "exit_msg": "ආයුබෝවන්! 👋",
+        "song_prompt": "ගීතයේ නම ඇතුළත් කරන්න (හෝ පිටවීමට 'exit' යතුරුලියනය කරන්න): ",
+        "artist_prompt": "කලාකරුවාගේ නම ඇතුළත් කරන්න (විකල්ප): ",
+        "searching": "'{}' සඳහා පද රචනා සොයමින්...",
+        "no_timestamps": "\n⚠️ පද රචනා හමු විය, නමුත් ඒවාට කාල මුද්දර නොමැත.",
+        "plain_lyrics_prompt": "ඔබට තවමත් සාමාන්‍ය පද රචනා බැලීමට සහ සුරැකීමට අවශ්‍යද? (y/n): ",
+        "restarting": "\nනැවත ආරම්භ කරමින්...",
+        "found_header": "\n--- පද රචනා හමු විය! ---\n",
+        "save_prompt": "ඔබට මෙම පද රචනා පෙළ ගොනුවකට සුරැකීමට අවශ්‍යද? (y/n): ",
+        "saved_success": "✅ පද රචනා සාර්ථකව {} වෙත සුරකින ලදි",
+        "not_found": "\n❌ කණගාටුයි, මෙම ගීතය සඳහා පද රචනා සොයාගත නොහැකි විය.",
+        "error_msg": "\nදෝෂයක් ඇති විය: {}",
+        "loop_restart": "\n--- සෙවුම නැවත ආරම්භ කරමින් ---"
+    },
+    "so": {
+        "title": "🎵 Raadiyaha Erayada Heesaha La Isku Xidhay 🎵",
+        "exit_msg": "Nabad gelyo! 👋",
+        "song_prompt": "Geli magaca heesta (ama qor 'exit' si aad uga baxdo): ",
+        "artist_prompt": "Geli magaca fannaanka (ikhtiyaari): ",
+        "searching": "Waxa la raadinayaa erayada heesta: '{}'...",
+        "no_timestamps": "\n⚠️ Erayada waa la helay, laakiin MALAHA waqtiyo.",
+        "plain_lyrics_prompt": "Miyaad weli jeclaan lahayd inaad aragto oo kaydiso erayada caadiga ah? (y/n): ",
+        "restarting": "\nDib ayaa loo bilaabayaa...",
+        "found_header": "\n--- Erayadii Waa La Helay! ---\n",
+        "save_prompt": "Ma doonaysaa inaad ku kaydiso erayadan fayl qoraal ah? (y/n): ",
+        "saved_success": "✅ Erayada si guul leh ayaa loogu kaydiyay {}",
+        "not_found": "\n❌ Waan ka xunnahay, erayada laguma heli karin heestan.",
+        "error_msg": "\nCilad ayaa dhacday: {}",
+        "loop_restart": "\n--- Raadinta Ayaa Dib Loo Bilaabayaa ---"
+    },
+    "ta": {
+        "title": "🎵 ஒத்திசைக்கப்பட்ட பாடல் வரிகள் கண்டுபிடிப்பான் 🎵",
+        "exit_msg": "பிரியாவிடை! 👋",
+        "song_prompt": "பாடல் பெயரை உள்ளிடவும் (அல்லது வெளியேற 'exit' என தட்டச்சு செய்யவும்): ",
+        "artist_prompt": "கலைஞரின் பெயரை உள்ளிடவும் (விருப்பத்தேர்வு): ",
+        "searching": "'{}' க்கான பாடல் வரிகளைத் தேடுகிறது...",
+        "no_timestamps": "\n⚠️ பாடல் வரிகள் கிடைத்தன, ஆனால் அவற்றில் நேர முத்திரைகள் இல்லை.",
+        "plain_lyrics_prompt": "எளிய பாடல் வரிகளைப் பார்த்து சேமிக்க விரும்புகிறீர்களா? (y/n): ",
+        "restarting": "\nமீண்டும் தொடங்குகிறது...",
+        "found_header": "\n--- பாடல் வரிகள் கிடைத்தன! ---\n",
+        "save_prompt": "இந்த பாடல் வரிகளை உரை கோப்பில் சேமிக்க வேண்டுமா? (y/n): ",
+        "saved_success": "✅ பாடல் வரிகள் வெற்றிகரமாக {} இல் சேமிக்கப்பட்டன",
+        "not_found": "\n❌ மன்னிக்கவும், இந்த டிராக்கிற்கான பாடல் வரிகளைக் கண்டறிய முடியவில்லை.",
+        "error_msg": "\nஒரு பிழை ஏற்பட்டது: {}",
+        "loop_restart": "\n--- தேடலை மீண்டும் தொடங்குகிறது ---"
+    },
+    "te": {
+        "title": "🎵 సమకాలీకరించబడిన లిరిక్స్ ఫైండర్ 🎵",
+        "exit_msg": "వీడ్కోలు! 👋",
+        "song_prompt": "పాట పేరును నమోదు చేయండి (లేదా నిష్క్రమించడానికి 'exit' అని టైప్ చేయండి): ",
+        "artist_prompt": "కళాకారుడి పేరును నమోదు చేయండి (ఐచ్ఛికం): ",
+        "searching": "'{}' కోసం లిరిక్స్ వెతుకుతోంది...",
+        "no_timestamps": "\n⚠️ లిరిక్స్ కనుగొనబడ్డాయి, కానీ వాటికి టైమ్‌స్టాంప్‌లు లేవు.",
+        "plain_lyrics_prompt": "మీరు ఇప్పటికీ సాదా లిరిక్స్‌ని చూసి సేవ్ చేయాలనుకుంటున్నారా? (y/n): ",
+        "restarting": "\nపునఃప్రారంభించబడుతోంది...",
+        "found_header": "\n--- లిరిక్స్ కనుగొనబడ్డాయి! ---\n",
+        "save_prompt": "మీరు ఈ లిరిక్స్‌ను టెక్స్ట్ ఫైల్‌లో సేవ్ చేయాలనుకుంటున్నారా? (y/n): ",
+        "saved_success": "✅ లిరిక్స్ విజయవంతంగా {} కు సేవ్ చేయబడ్డాయి",
+        "not_found": "\n❌ క్షమించండి, ఈ ట్రాక్ కోసం లిరిక్స్ కనుగొనబడలేదు.",
+        "error_msg": "\nఒక లోపం ఏర్పడింది: {}",
+        "loop_restart": "\n--- శోధన పునఃప్రారంభించబడుతోంది ---"
+    },
+    "uz": {
+        "title": "🎵 Sinxronlashtirilgan Qo'shiq Matni Qidiruvchisi 🎵",
+        "exit_msg": "Xayr! 👋",
+        "song_prompt": "Qo'shiq nomini kiriting (yoki chiqish uchun 'exit' deb yozing): ",
+        "artist_prompt": "Ijrochi nomini kiriting (ixtiyoriy): ",
+        "searching": "'{}' uchun qo'shiq matni qidirilmoqda...",
+        "no_timestamps": "\n⚠️ Qo'shiq matni topildi, lekin ularda vaqt belgilari YO'Q.",
+        "plain_lyrics_prompt": "Oddiy matnni ko'rish va saqlashni xohlaysizmi? (y/n): ",
+        "restarting": "\nQayta ishga tushirilmoqda...",
+        "found_header": "\n--- Qo'shiq Matni Topildi! ---\n",
+        "save_prompt": "Ushbu qo'shiq matnini matnli faylga saqlashni xohlaysizmi? (y/n): ",
+        "saved_success": "✅ Qo'shiq matni {} fayliga muvaffaqiyatli saqlandi",
+        "not_found": "\n❌ Kechirasiz, ushbu trek uchun qo'shiq matni topilmadi.",
+        "error_msg": "\nXatolik yuz berdi: {}",
+        "loop_restart": "\n--- Qidiruvni Qayta Ishga Tushirish ---"
+    }
+}
+
+def choose_interface_language():
+    # Structural definition of supported languages for cleaner layout generation
+    languages_list = [
+        ("en", "English"), ("pl", "Polish (Polski)"), ("zh", "Mandarin Chinese (中文)"),
+        ("hi", "Hindi (हिन्दी)"), ("es", "Spanish (Español)"), ("pt", "Portuguese (Português)"),
+        ("fr", "French (Français)"), ("de", "German (Deutsch)"), ("uk", "Ukrainian (Українська)"),
+        ("it", "Italian (Italiano)"), ("ko", "Korean (한국어)"), ("ja", "Japanese (日本語)"),
+        ("ro", "Romanian (Română)"), ("nl", "Dutch (Nederlands)"), ("sv", "Swedish (Svenska)"),
+        ("da", "Danish (Dansk)"), ("no", "Norwegian (Norsk)"), ("is", "Icelandic (Íslenska)"),
+        ("bg", "Bulgarian (Български)"), ("el", "Greek (Ελληνικά)"), ("tr", "Turkish (Türkçe)"),
+        ("ar", "Arabic (العربية)"), ("ru", "Russian (Русский)"), ("bn", "Bengali (বাংলা)"),
+        ("id", "Indonesian (Bahasa Indonesia)"), ("vi", "Vietnamese (Tiếng Việt)"), ("th", "Thai (ไทย)"),
+        ("fa", "Persian (فارسی)"), ("ur", "Urdu (اردو)"), ("cs", "Czech (Čeština)"),
+        ("hu", "Hungarian (Magyar)"), ("fi", "Finnish (Suomi)"), ("he", "Hebrew (עברית)"),
+        ("sk", "Slovak (Slovenčina)"), ("ms", "Malay (Bahasa Melayu)"), ("tl", "Tagalog (Tagalog)"),
+        ("hr", "Croatian (Hrvatski)"), ("sr", "Serbian (Српски)"), ("sl", "Slovenian (Slovenščina)"),
+        ("et", "Estonian (Eesti)"), ("lv", "Latvian (Latviešu)"), ("lt", "Lithuanian (Lietuvių)"),
+        ("af", "Afrikaans"), ("sw", "Swahili (Kiswahili)"), ("ca", "Catalan (Català)"),
+        ("gl", "Galician (Galego)"), ("eu", "Basque (Euskara)"), ("ga", "Irish (Gaeilge)"),
+        ("cy", "Welsh (Cymraeg)"), ("az", "Azerbaijani (Azərbaycanca)"),
+        ("am", "Amharic (አማርኛ)"), ("hy", "Armenian (Հայերեն)"), ("be", "Belarusian (Беларуская)"),
+        ("bs", "Bosnian (Bosanski)"), ("km", "Khmer (ខ្មែរ)"), ("ka", "Georgian (ქართული)"),
+        ("gu", "Gujarati (ગુજરાતી)"), ("ha", "Hausa (Hausa)"), ("ig", "Igbo (Igbo)"),
+        ("kn", "Kannada (ಕನ್ನಡ)"), ("kk", "Kazakh (Қазақша)"), ("ku", "Kurdish (Kurdî)"),
+        ("ky", "Kyrgyz (Кыргызча)"), ("lo", "Lao (ລາວ)"), ("mk", "Macedonian (Македонски)"),
+        ("ml", "Malayalam (മലയാളം)"), ("mr", "Marathi (मराठी)"), ("mn", "Mongolian (Монгол)"),
+        ("ne", "Nepali (नेपाली)"), ("pa", "Punjabi (ਪੰਜਾਬੀ)"), ("si", "Sinhala (සිංහල)"),
+        ("so", "Somali (Soomaali)"), ("ta", "Tamil (தமிழ்)"), ("te", "Telugu (తెలుగు)"),
+        ("uz", "Uzbek (Oʻzbekcha)")
+    ]
+    
+    print("\nLanguage / 语言 / Język / Idioma / Langue / اللغة / ভাষা / Língua / Язык / زبان / Sprache / भाषा / భాష / Lingua / Български")
+    print("-" * 120)
+    
+    # Render language options dynamically into 2 parallel columns to maximize terminal readability
+    for i in range(0, len(languages_list), 2):
+        col1 = f"{languages_list[i][0]} - {languages_list[i][1]}"
+        col2 = f"{languages_list[i+1][0]} - {languages_list[i+1][1]}" if i+1 < len(languages_list) else ""
+        print(f"  {col1:<50} {col2}")
+        
+    print("-" * 120)
+    
+    prompt_string = (
+        "Choice / Wybór / 选择 / विकल्प / Opción / Choix / পছন্দ / Opção / Выбор / انتخاب / Pilihan / Auswahl / निवड / ఎంపిక / Scelta\n"
+        "(default: en): "
+    )
+    
+    while True:
+        choice = input(prompt_string).strip().lower()
+        if choice == "":
+            return "en"
+        if choice in LOCALIZATION:
+            return choice
+        print("Invalid choice, defaulting to English.")
+        return "en"
+
+def get_synced_lyrics():
+    ui_lang = choose_interface_language()
+    txt = LOCALIZATION[ui_lang]
+    
+    # Universal list of affirmative confirmation characters across all 50 target locales
+    valid_affirmations = ['y', 't', 's', 'o', 'j', 'e', 'д', 'а', 'c', 'k', 'i', 'p', 'b', 'x']
+    
+    while True:
+        print(f"\n{txt['title']}")
+        
+        song_name = input(txt['song_prompt']).strip()
+        if song_name.lower() == 'exit':
+            print(txt['exit_msg'])
+            break
+            
+        artist_name = input(txt['artist_prompt']).strip()
+        search_query = f"{song_name} {artist_name}".strip()
+        
+        print(txt['searching'].format(search_query))
+        
+        try:
+            lrc_lyrics = syncedlyrics.search(search_query, providers=["Lrclib", "Musixmatch"])
+            if not lrc_lyrics:
+                lrc_lyrics = syncedlyrics.search(search_query)
+            
+            if lrc_lyrics:
+                formatted_lines = []
+                has_timestamps = False
+                
+                for line in lrc_lyrics.split('\n'):
+                    if re.search(r"[\u4e00-\u9fff]", line):
+                        if any(k in line for k in ["作词", "作曲", "贡献者", "编曲"]):
+                            continue
+                    
+                    if any(k in line.lower() for k in ["contributor", "lyrics by", "composed by"]):
+                        continue
+                        
+                    if re.search(r"\[\d{1,2}:\d{2}\.\d+\]", line):
+                        has_timestamps = True
+                        formatted_lines.append(line)
+                    else:
+                        if not re.search(r"\[[a-zA-Z]+:.*\]", line) and line.strip():
+                            formatted_lines.append(line)
+                
+                if has_timestamps:
+                    final_lyrics = "\n".join([line for line in formatted_lines if line.startswith("[")])
+                else:
+                    print(txt['no_timestamps'])
+                    choice = input(txt['plain_lyrics_prompt']).lower().strip()
+                    if choice not in valid_affirmations:
+                        print(txt['restarting'])
+                        continue
+                    final_lyrics = "\n".join(formatted_lines)
+
+                print(txt['found_header'])
+                print(final_lyrics)
+                print("\n----------------------------\n")
+                
+                save = input(txt['save_prompt']).lower().strip()
+                if save in valid_affirmations:
+                    format_choice = input("Save as TXT or LRC file? (txt/lrc): ").lower().strip()
+                    ext = "lrc" if format_choice == "lrc" else "txt"
+                    
+                    safe_name = song_name.replace(' ', '_').replace('/', '_')
+                    filename = f"{safe_name}_lyrics.{ext}"
+                    
+                    with open(filename, "w", encoding="utf-8") as file:
+                        file.write(final_lyrics)
+                    print(txt['saved_success'].format(filename))
+            else:
+                print(txt['not_found'])
+                
+        except Exception as e:
+            print(txt['error_msg'].format(e))
+            
+        print(txt['loop_restart'])
+
+if __name__ == "__main__":
+    get_synced_lyrics()
