@@ -1,7 +1,6 @@
 import syncedlyrics
 import re
 
-# Translation dictionary containing interface strings for 75 worldwide languages
 LOCALIZATION = {
     "en": {
         "title": "🎵 Synced Lyrics Finder 🎵",
@@ -1239,7 +1238,7 @@ def choose_interface_language():
     print("\nLanguage / 语言 / Język / Idioma / Langue / اللغة / ভাষা / Língua / Язык / زبان / Sprache / भाषा / భాష / Lingua / Български")
     print("-" * 120)
     
-    # Render language options dynamically into 2 parallel columns to maximize terminal readability
+     
     for i in range(0, len(languages_list), 2):
         col1 = f"{languages_list[i][0]} - {languages_list[i][1]}"
         col2 = f"{languages_list[i+1][0]} - {languages_list[i+1][1]}" if i+1 < len(languages_list) else ""
@@ -1265,7 +1264,7 @@ def get_synced_lyrics():
     ui_lang = choose_interface_language()
     txt = LOCALIZATION[ui_lang]
     
-    # Universal list of affirmative confirmation characters across all 50 target locales
+    
     valid_affirmations = ['y', 't', 's', 'o', 'j', 'e', 'д', 'а', 'c', 'k', 'i', 'p', 'b', 'x']
     
     while True:
